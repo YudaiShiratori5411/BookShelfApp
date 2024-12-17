@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>本の詳細</title>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <h2 class="mb-4">本の詳細</h2>
+                
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title" th:text="${book.title}">タイトル</h3>
+                        <h6 class="card-subtitle mb-3 text-muted" th:text="${book.author}">著者</h6>
+
+                        <!-- 読書進捗 -->
+                        <div class="mb-4">
+                            <h5>読書進捗</h5>
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar"
+                                     th:style="'width: ' + ${book.currentPage * 100 / book.totalPages} + '%'"
+                                     th:text="${book.currentPage + '/' + book.totalPages + 'ページ'}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 基本情報 -->
+                        <div class="mb-4">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>カテゴリー：</strong> 
+                                        <span class="badge bg-primary" th:text="${book.category}">カテゴリー</span>
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>読書状態：</strong> 
+                                        <span class="badge" 
+                                              th:classappend="${book.readingStatus == 'READING' ? 'bg-success' : 
+                                                              book.readingStatus == 'COMPLETED' ? 'bg-info' : 'bg-warning'}"
+                                              th:text="${book.readingStatus}">状態</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- メモ -->
+                        <div class="mb-4">
+                            <h5>メモ</h5>
+                            <p class="card-text" th:text="${book.memo}">メモ内容</p>
+                        </div>
+
+                        <!-- タイムスタンプ -->
+                        <div class="text-muted small">
+                            <p>登録日時: <span th:text="${#temporals.format(book.createdAt, 'yyyy/MM/dd HH:mm')}">登録日時</span></p>
+                            <p>更新日時: <span th:text="${#temporals.format(book.updatedAt, 'yyyy/MM/dd HH:mm')}">更新日時</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 操作ボタン -->
+                <div class="mt-4">
+                    <a th:href="@{/books/{id}/edit(id=${book.id})}" class="btn btn-primary">編集</a>
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteConfirmModal">
+                        削除
+                    </button>
+                    <a th:href="@{/books}" class="btn btn-secondary">戻る</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 削除確認モーダル -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">削除の確認</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p><span th:text="${book.title}"></span> を削除してもよろしいですか？</p>
+                    <p class="text-danger">この操作は取り消せません。</p>
+                </div>
+                <div class="modal-footer">
+                    <form th:action="@{/books/{id}/delete(id=${book.id})}" method="post">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                        <button type="submit" class="btn btn-danger">削除する</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
