@@ -101,6 +101,15 @@ public class BookService {
     public List<Book> getRecentlyUpdatedBooks() {
         return bookRepository.findTop10ByOrderByUpdatedAtDesc();
     }
+    
+    // 検索メソッド
+    public List<Book> searchBooks(String title, String author, String category) {
+        return bookRepository.searchBooks(
+            title.isEmpty() ? null : title,
+            author.isEmpty() ? null : author,
+            category.isEmpty() ? null : category
+        );
+    }
 }
 
 

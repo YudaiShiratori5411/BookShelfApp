@@ -34,5 +34,20 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     // 最近更新された本を取得（デフォルトで降順）
     List<Book> findTop10ByOrderByUpdatedAtDesc();
+
+    // タイトルまたは著者で検索
+    @Query("SELECT b FROM Book b WHERE b.title LIKE %:keyword% OR b.author LIKE %:keyword%")
+    List<Book> searchByKeyword(@Param("keyword") String keyword);
+
+    // タイトル、著者、カテゴリーで複合検索
+    @Query("SELECT b FROM Book b WHERE " +
+           "(:title IS NULL OR b.title LIKE %:title%) AND " +
+           "(:author IS NULL OR b.author LIKE %:author%) AND " +
+           "(:category IS NULL OR b.category = :category)")
+    List<Book> searchBooks(
+        @Param("title") String title,
+        @Param("author") String author,
+        @Param("category") String category
+    );
 }
 

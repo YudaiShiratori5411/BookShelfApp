@@ -6,7 +6,35 @@
 </head>
 <body>
     <div class="container">
-        <h2>本の一覧</h2>
+        <!-- 検索フォーム -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form th:action="@{/books/search}" method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="title" class="form-label">タイトル</label>
+                        <input type="text" class="form-control" id="title" name="title" th:value="${param.title}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="author" class="form-label">著者</label>
+                        <input type="text" class="form-control" id="author" name="author" th:value="${param.author}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="category" class="form-label">カテゴリー</label>
+                        <select class="form-select" id="category" name="category">
+                            <option value="">すべて</option>
+                            <option value="技術書" th:selected="${param.category == '技術書'}">技術書</option>
+                            <option value="小説" th:selected="${param.category == '小説'}">小説</option>
+                            <option value="ビジネス" th:selected="${param.category == 'ビジネス'}">ビジネス</option>
+                            <option value="その他" th:selected="${param.category == 'その他'}">その他</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">検索</button>
+                        <a th:href="@{/books}" class="btn btn-secondary ms-2">クリア</a>
+                    </div>
+                </form>
+            </div>
+        </div>
         
         <!-- 本の一覧をカード形式で表示 -->
         <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">

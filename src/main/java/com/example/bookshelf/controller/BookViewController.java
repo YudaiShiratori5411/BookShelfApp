@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.bookshelf.entity.Book;
@@ -35,7 +36,8 @@ public class BookViewController {
     @GetMapping("/new")
     public String newBookForm(Model model) {
         model.addAttribute("book", new Book());
-        return "books/form";
+        model.addAttribute("template", "books/form");
+        return "layouts/layout";
     }
     
     @PostMapping
@@ -96,6 +98,19 @@ public class BookViewController {
             redirectAttributes.addFlashAttribute("messageType", "error");
             return "redirect:/books/" + id;
         }
+    }
+    
+    @GetMapping("/search")
+    public String searchBooks(
+        @RequestParam(required = false, defaultValue = "") String title,
+        @RequestParam(required = false, defaultValue = "") String author,
+        @RequestParam(required = false, defaultValue = "") String category,
+        Model model
+    ) {
+        List<Book> searchResults = bookService.searchBooks(title, author, category);
+        model.addAttribute("books", searchResults);
+        model.addAttribute("template", "books/list");
+        return "layouts/layout";
     }
 }
 
