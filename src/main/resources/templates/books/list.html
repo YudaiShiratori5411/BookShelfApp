@@ -1,93 +1,84 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
 <head>
     <meta charset="UTF-8">
     <title>本の一覧</title>
 </head>
 <body>
-    <div class="container">
-        <!-- 検索フォーム -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <form th:action="@{/books/search}" method="get" class="row g-3">
-                    <div class="col-md-4">
-                        <label for="title" class="form-label">タイトル</label>
-                        <input type="text" class="form-control" id="title" name="title" th:value="${param.title}">
-                    </div>
-                    <div class="col-md-4">
-                        <label for="author" class="form-label">著者</label>
-                        <input type="text" class="form-control" id="author" name="author" th:value="${param.author}">
-                    </div>
-                    <div class="col-md-4">
-                        <label for="category" class="form-label">カテゴリー</label>
-                        <select class="form-select" id="category" name="category">
-                            <option value="">すべて</option>
-                            <option value="技術書" th:selected="${param.category == '技術書'}">技術書</option>
-                            <option value="小説" th:selected="${param.category == '小説'}">小説</option>
-                            <option value="ビジネス" th:selected="${param.category == 'ビジネス'}">ビジネス</option>
-                            <option value="その他" th:selected="${param.category == 'その他'}">その他</option>
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <button type="submit" class="btn btn-primary">検索</button>
-                        <a th:href="@{/books}" class="btn btn-secondary ms-2">クリア</a>
-                    </div>
-                </form>
-            </div>
-        </div>
+    <div layout:fragment="content">
+        <h2>本の一覧</h2>
         
-        <!-- 本の一覧をカード形式で表示 -->
-        <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
-            <div class="col" th:each="book : ${books}">
-                <div class="card h-100">
+        <div class="row g-4">
+            <!-- 各本のカード -->
+            <div th:each="book : ${books}" class="col-md-4">
+                <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title" th:text="${book.title}">本のタイトル</h5>
-                        <h6 class="card-subtitle mb-2 text-muted" th:text="${book.author}">著者名</h6>
+                        <h5 class="card-title" th:text="${book.title}">タイトル</h5>
+                        <h6 class="card-subtitle mb-2 text-muted" th:text="${book.author}">著者</h6>
                         
-                        <!-- 読書進捗バー -->
-                        <div class="progress mb-2">
-                            <div class="progress-bar" role="progressbar"
-                                 th:style="'width: ' + ${book.currentPage != null && book.totalPages != null ? book.currentPage * 100 / book.totalPages : 0} + '%'"
-                                 th:text="${book.currentPage + '/' + book.totalPages + 'ページ'}">
+                        <!-- 進捗バー -->
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <small>進捗</small>
+                                <small th:with="current=${book.currentPage != null ? book.currentPage : 0},
+                                              total=${book.totalPages != null ? book.totalPages : 1},
+                                              percentage=${total > 0 ? #numbers.formatDecimal(current * 100.0 / total, 1, 1) : 0}"
+                                       th:text="${percentage + '% (' + current + '/' + total + 'ページ)'}">
+                                </small>
+                            </div>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar" role="progressbar"
+                                     th:with="current=${book.currentPage != null ? book.currentPage : 0},
+                                              total=${book.totalPages != null ? book.totalPages : 1}"
+                                     th:style="'width: ' + ${total > 0 ? (current * 100 / total) : 0} + '%'"
+                                     th:aria-valuenow="${total > 0 ? (current * 100 / total) : 0}"
+                                     aria-valuemin="0"
+                                     aria-valuemax="100">
+                                </div>
                             </div>
                         </div>
-                        
-                        <!-- カテゴリーと状態のバッジ -->
+
+                        <!-- カテゴリーと読書状態 -->
                         <div class="mb-2">
-                            <span class="badge bg-primary me-1" th:text="${book.category}">カテゴリー</span>
+                            <span class="badge bg-primary" th:text="${book.category}">カテゴリー</span>
                             <span class="badge" 
-                                  th:classappend="${book.readingStatus == 'READING' ? 'bg-success' : 
-                                                  book.readingStatus == 'COMPLETED' ? 'bg-info' : 
-                                                  'bg-warning'}"
-                                  th:text="${book.readingStatus}">状態</span>
+                                  th:with="status=${book.readingStatus}"
+                                  th:classappend="${status != null ? 
+                                                (status.name() == 'READING' ? 'bg-success' : 
+                                                 status.name() == 'COMPLETED' ? 'bg-info' : 
+                                                 status.name() == 'ON_HOLD' ? 'bg-warning' : 
+                                                 'bg-secondary') : 'bg-secondary'}"
+                                  th:text="${status != null ? status.displayName : '未設定'}">
+                            </span>
                         </div>
-                        
+
                         <!-- 操作ボタン -->
-                        <div class="mt-3">
-                            <a th:href="@{/books/{id}(id=${book.id})}" class="btn btn-sm btn-outline-primary me-1">詳細</a>
-                            <a th:href="@{/books/{id}/edit(id=${book.id})}" class="btn btn-sm btn-outline-secondary me-1">編集</a>
-                            <button class="btn btn-sm btn-outline-danger" 
+                        <div class="btn-group">
+                            <a th:href="@{/books/{id}(id=${book.id})}" class="btn btn-outline-primary btn-sm">詳細</a>
+                            <a th:href="@{/books/{id}/edit(id=${book.id})}" class="btn btn-outline-secondary btn-sm">編集</a>
+                            <button type="button" class="btn btn-outline-danger btn-sm"
                                     data-bs-toggle="modal" 
-                                    th:data-bs-target="'#deleteConfirmModal' + ${book.id}">削除</button>
-                            
-                            <!-- 各本ごとの削除確認モーダル -->
-                            <div class="modal fade" th:id="'deleteConfirmModal' + ${book.id}" tabindex="-1">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">削除の確認</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <p><span th:text="${book.title}"></span> を削除してもよろしいですか？</p>
-                                            <p class="text-danger">この操作は取り消せません。</p>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <form th:action="@{/books/{id}/delete(id=${book.id})}" method="post">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
-                                                <button type="submit" class="btn btn-danger">削除する</button>
-                                            </form>
-                                        </div>
+                                    th:data-bs-target="${'#deleteModal-' + book.id}">削除</button>
+                        </div>
+
+                        <!-- 各本の削除モーダル -->
+                        <div class="modal fade" th:id="${'deleteModal-' + book.id}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">削除の確認</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p><span th:text="${book.title}"></span> を削除してもよろしいですか？</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <form th:action="@{/books/{id}/delete(id=${book.id})}" method="post">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                                            <button type="submit" class="btn btn-danger">削除</button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
@@ -96,13 +87,12 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- 新規登録ボタン -->
-        <div class="text-center">
-            <a href="/books/new" class="btn btn-primary">新しい本を登録</a>
+        <div class="text-center mt-4">
+            <a th:href="@{/books/new}" class="btn btn-primary">新しい本を登録</a>
         </div>
     </div>
 </body>
 </html>
-
 

@@ -62,10 +62,20 @@ public class Book {
     }
 
     public enum ReadingStatus {
-        NOT_STARTED,
-        READING,
-        COMPLETED,
-        ON_HOLD
+        NOT_STARTED("未読"),
+        READING("読書中"),
+        COMPLETED("完読"),
+        ON_HOLD("中断");
+
+        private final String displayName;
+
+        ReadingStatus(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
     }
 }
 

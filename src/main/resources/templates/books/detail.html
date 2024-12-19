@@ -1,11 +1,13 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
 <head>
     <meta charset="UTF-8">
     <title>本の詳細</title>
 </head>
 <body>
-    <div class="container">
+    <div layout:fragment="content">
         <div class="row">
             <div class="col-md-8 offset-md-2">
                 <h2 class="mb-4">本の詳細</h2>
@@ -20,8 +22,10 @@
                             <h5>読書進捗</h5>
                             <div class="progress">
                                 <div class="progress-bar" role="progressbar"
-                                     th:style="'width: ' + ${book.currentPage * 100 / book.totalPages} + '%'"
-                                     th:text="${book.currentPage + '/' + book.totalPages + 'ページ'}">
+                                     th:with="current=${book.currentPage != null ? book.currentPage : 0},
+                                              total=${book.totalPages != null ? book.totalPages : 1}"
+                                     th:style="'width: ' + ${total > 0 ? (current * 100 / total) : 0} + '%'"
+                                     th:text="${current + '/' + total + 'ページ'}">
                                 </div>
                             </div>
                         </div>
@@ -34,12 +38,17 @@
                                         <span class="badge bg-primary" th:text="${book.category}">カテゴリー</span>
                                     </p>
                                 </div>
+                                <!-- 読書状態の編集フォームを追加 -->
                                 <div class="col-md-6">
                                     <p><strong>読書状態：</strong> 
                                         <span class="badge" 
-                                              th:classappend="${book.readingStatus == 'READING' ? 'bg-success' : 
-                                                              book.readingStatus == 'COMPLETED' ? 'bg-info' : 'bg-warning'}"
-                                              th:text="${book.readingStatus}">状態</span>
+                                              th:with="status=${book.readingStatus}"
+                                              th:classappend="${status != null ? 
+                                                            (status.name() == 'READING' ? 'bg-success' : 
+                                                             status.name() == 'COMPLETED' ? 'bg-info' : 
+                                                             status.name() == 'ON_HOLD' ? 'bg-warning' : 
+                                                             'bg-secondary') : 'bg-secondary'}"
+                                              th:text="${status != null ? status.displayName : '未設定'}">状態</span>
                                     </p>
                                 </div>
                             </div>
@@ -69,29 +78,31 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- 削除確認モーダル -->
-    <div class="modal fade" id="deleteConfirmModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">削除の確認</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p><span th:text="${book.title}"></span> を削除してもよろしいですか？</p>
-                    <p class="text-danger">この操作は取り消せません。</p>
-                </div>
-                <div class="modal-footer">
-                    <form th:action="@{/books/{id}/delete(id=${book.id})}" method="post">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
-                        <button type="submit" class="btn btn-danger">削除する</button>
-                    </form>
+        <!-- 削除確認モーダル -->
+        <div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">削除の確認</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><span th:text="${book.title}"></span> を削除してもよろしいですか？</p>
+                        <p class="text-danger">この操作は取り消せません。</p>
+                    </div>
+                    <div class="modal-footer">
+                        <form th:action="@{/books/{id}/delete(id=${book.id})}" method="post">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                            <button type="submit" class="btn btn-danger">削除する</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </body>
 </html>
+
+
 

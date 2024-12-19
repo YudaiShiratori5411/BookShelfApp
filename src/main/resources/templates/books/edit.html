@@ -1,81 +1,81 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
 <head>
     <meta charset="UTF-8">
     <title>本の編集</title>
 </head>
 <body>
-    <div class="container">
-        <h2 class="mb-4">本の編集</h2>
-        
-        <form th:action="@{/books/{id}/update(id=${book.id})}" th:object="${book}" method="post" class="needs-validation" novalidate>
-            <!-- タイトルと著者 -->
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="title" class="form-label">タイトル *</label>
-                    <input type="text" class="form-control" id="title" th:field="*{title}" required>
-                    <div class="invalid-feedback">タイトルを入力してください</div>
-                </div>
-                <div class="col-md-6">
-                    <label for="author" class="form-label">著者 *</label>
-                    <input type="text" class="form-control" id="author" th:field="*{author}" required>
-                    <div class="invalid-feedback">著者名を入力してください</div>
-                </div>
-            </div>
+    <div layout:fragment="content">
+        <div class="container">
+            <h2 class="mb-4">本の編集</h2>
 
-            <!-- ページ数 -->
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="totalPages" class="form-label">総ページ数 *</label>
-                    <input type="number" class="form-control" id="totalPages" th:field="*{totalPages}" required min="1">
-                    <div class="invalid-feedback">有効なページ数を入力してください</div>
-                </div>
-                <div class="col-md-6">
-                    <label for="currentPage" class="form-label">現在のページ</label>
-                    <input type="number" class="form-control" id="currentPage" th:field="*{currentPage}" min="0">
-                </div>
-            </div>
+            <form th:action="@{/books/{id}/update(id=${book.id})}" th:object="${book}" method="post">
+                <input type="hidden" th:field="*{id}" />
 
-            <!-- カテゴリーと読書状態 -->
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="category" class="form-label">カテゴリー *</label>
-                    <select class="form-select" id="category" th:field="*{category}" required>
-                        <option value="">カテゴリーを選択</option>
-                        <option value="技術書">技術書</option>
-                        <option value="小説">小説</option>
-                        <option value="ビジネス">ビジネス</option>
-                        <option value="その他">その他</option>
-                    </select>
-                    <div class="invalid-feedback">カテゴリーを選択してください</div>
+                <!-- タイトルと著者 -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="title" class="form-label">タイトル *</label>
+                        <input type="text" class="form-control" id="title" th:field="*{title}" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label for="author" class="form-label">著者 *</label>
+                        <input type="text" class="form-control" id="author" th:field="*{author}" required />
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <label for="readingStatus" class="form-label">読書状態</label>
-                    <select class="form-select" id="readingStatus" th:field="*{readingStatus}">
-                        <option value="NOT_STARTED">未読</option>
-                        <option value="READING">読書中</option>
-                        <option value="COMPLETED">完読</option>
-                        <option value="ON_HOLD">中断</option>
-                    </select>
+
+                <!-- ページ数 -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="totalPages" class="form-label">総ページ数 *</label>
+                        <input type="number" class="form-control" id="totalPages" th:field="*{totalPages}" required min="1" />
+                    </div>
+                    <div class="col-md-6">
+                        <label for="currentPage" class="form-label">現在のページ</label>
+                        <input type="number" class="form-control" id="currentPage" th:field="*{currentPage}" min="0" />
+                    </div>
                 </div>
-            </div>
 
-            <!-- メモ -->
-            <div class="mb-4">
-                <label for="memo" class="form-label">メモ</label>
-                <textarea class="form-control" id="memo" th:field="*{memo}" rows="3"></textarea>
-            </div>
+                <!-- カテゴリーと読書状態 -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="category" class="form-label">カテゴリー *</label>
+                        <select class="form-select" id="category" th:field="*{category}" required>
+                            <option value="">カテゴリーを選択</option>
+                            <option th:each="cat : ${categories}"
+                                    th:value="${cat}"
+                                    th:text="${cat}">
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="readingStatus" class="form-label">読書状態</label>
+                        <select class="form-select" id="readingStatus" th:field="*{readingStatus}">
+                            <option th:each="status : ${readingStatuses}"
+                                    th:value="${status}"
+                                    th:text="${status.displayName}"
+                                    th:selected="${status == book.readingStatus}">
+                            </option>
+                        </select>
+                    </div>
+                </div>
 
-            <!-- ボタン -->
-            <div class="mb-3">
-                <button type="submit" class="btn btn-primary">更新</button>
-                <a th:href="@{/books}" class="btn btn-secondary ms-2">キャンセル</a>
-            </div>
+                <!-- メモ -->
+                <div class="mb-4">
+                    <label for="memo" class="form-label">メモ</label>
+                    <textarea class="form-control" id="memo" th:field="*{memo}" rows="3"></textarea>
+                </div>
 
-            <small class="text-muted">* 必須項目</small>
-        </form>
+                <!-- ボタン -->
+                <div class="mb-3">
+                    <button type="submit" class="btn btn-primary">更新</button>
+                    <a th:href="@{/books}" class="btn btn-secondary ms-2">キャンセル</a>
+                </div>
+            </form>
+        </div>
     </div>
 </body>
 </html>
-
 

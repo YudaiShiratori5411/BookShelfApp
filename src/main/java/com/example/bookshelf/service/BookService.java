@@ -26,9 +26,10 @@ public class BookService {
     }
 
     // 本の情報更新
+    @Transactional
     public Book updateBook(Long id, Book bookDetails) {
         Book book = bookRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("本が見つかりません: " + id));
+                .orElseThrow(() -> new RuntimeException("本が見つかりません: " + id));
         
         book.setTitle(bookDetails.getTitle());
         book.setAuthor(bookDetails.getAuthor());
@@ -74,7 +75,13 @@ public class BookService {
 
     // 本の取得（ID指定）
     public Optional<Book> getBookById(Long id) {
-        return bookRepository.findById(id);
+        try {
+            return bookRepository.findById(id);
+        } catch (Exception e) {
+            System.err.println("Error in getBookById: " + e.getMessage());
+            e.printStackTrace();
+            return Optional.empty();
+        }
     }
 
     // 全ての本を取得
@@ -109,6 +116,15 @@ public class BookService {
             author.isEmpty() ? null : author,
             category.isEmpty() ? null : category
         );
+    }
+    
+    // ReadingStatusの更新メソッドを追加
+    public Book updateReadingStatus(Long id, ReadingStatus status) {
+        Book book = bookRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("本が見つかりません: " + id));
+        
+        book.setReadingStatus(status);
+        return bookRepository.save(book);
     }
 }
 

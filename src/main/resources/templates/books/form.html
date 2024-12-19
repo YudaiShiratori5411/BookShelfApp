@@ -1,16 +1,18 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
 <head>
     <meta charset="UTF-8">
     <title>本の登録</title>
 </head>
 <body>
-    <div class="container">
+    <div layout:fragment="content">
         <div class="card">
             <div class="card-body">
                 <h2 class="mb-4">本の登録</h2>
                 <form th:action="@{/books}" th:object="${book}" method="post" class="needs-validation" novalidate>
-                    <!-- 1行目：タイトル、著者、カテゴリー -->
+                    <!-- タイトル、著者、カテゴリー -->
                     <div class="row mb-3">
                         <div class="col-md-4">
                             <label for="title" class="form-label">タイトル <span class="text-danger">*</span></label>
@@ -35,7 +37,7 @@
                         </div>
                     </div>
 
-                    <!-- 2行目：読書状態、総ページ数、現在のページ -->
+                    <!-- 読書状態、総ページ数、現在のページ -->
                     <div class="row mb-3">
                         <div class="col-md-4">
                             <label for="readingStatus" class="form-label">読書状態</label>
@@ -75,8 +77,28 @@
             </div>
         </div>
     </div>
+
+    <!-- フォームバリデーションのためのJavaScript -->
+    <script>
+        (function() {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            Array.prototype.slice.call(forms).forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+    </script>
 </body>
 </html>
+
+
+
 
 
 
