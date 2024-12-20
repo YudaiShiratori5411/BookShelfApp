@@ -8,20 +8,31 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.bookshelf.entity.Book;
 import com.example.bookshelf.entity.Book.ReadingStatus;
+import com.example.bookshelf.entity.Shelf;
 import com.example.bookshelf.repository.BookRepository;
+import com.example.bookshelf.repository.ShelfRepository;
 
 @Service
 @Transactional
 public class BookService {
-    
     private final BookRepository bookRepository;
+    private final ShelfRepository shelfRepository;
 
-    public BookService(BookRepository bookRepository) {
+    public BookService(BookRepository bookRepository, ShelfRepository shelfRepository) {
         this.bookRepository = bookRepository;
+        this.shelfRepository = shelfRepository;
     }
 
     // 本の登録
+    @Transactional
     public Book saveBook(Book book) {
+        // カテゴリーに基づいて適切な本棚を検索
+        Shelf shelf = shelfRepository.findByName(book.getCategory())
+                .orElseThrow(() -> new RuntimeException("該当する本棚が見つかりません: " + book.getCategory()));
+        
+        // 本棚を設定
+        book.setShelf(shelf);
+        
         return bookRepository.save(book);
     }
 

@@ -1,7 +1,7 @@
 package com.example.bookshelf.controller;
 
-import java.util.List;
 import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,24 +14,27 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.bookshelf.entity.Book;
+import com.example.bookshelf.entity.Shelf;
 import com.example.bookshelf.service.BookService;
+import com.example.bookshelf.service.ShelfService;
 
 @Controller
 @RequestMapping("/books")
 public class BookViewController {
+    private final BookService bookService;
+    private final ShelfService shelfService;
 
-   private final BookService bookService;
+    public BookViewController(BookService bookService, ShelfService shelfService) {
+        this.bookService = bookService;
+        this.shelfService = shelfService;
+    }
 
-   public BookViewController(BookService bookService) {
-       this.bookService = bookService;
-   }
-
-   @GetMapping
-   public String listBooks(Model model) {
-       List<Book> books = bookService.getAllBooks();
-       model.addAttribute("books", books);
-       return "books/list";
-   }
+    @GetMapping
+    public String listBooks(Model model) {
+        List<Shelf> shelves = shelfService.getAllShelves();
+        model.addAttribute("shelves", shelves);
+        return "books/list";
+    }
 
    @GetMapping("/new")
    public String newBookForm(Model model) {
@@ -121,6 +124,7 @@ public class BookViewController {
        model.addAttribute("books", searchResults);
        return "books/list";
    }
+   
 }
 
 

@@ -1,0 +1,279 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+.navbar {
+    margin-bottom: 0;
+}
+
+main {
+    padding: 0;
+    margin: 0;
+}
+
+.content {
+    width: 100vw;
+    min-height: 100vh;
+    background: #1a1a1a;
+}
+
+/* 本棚のスタイル */
+.bookshelf {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(
+        to bottom,
+        #8b4513,
+        #754321
+    );
+    min-height: 250px;
+    position: relative;
+}
+
+/* トップページの本棚専用のスタイル */
+/*.bookshelf-top-page {*/
+/*    margin-top: 0 !important;  .mt-4を打ち消す */
+/*}*/
+
+.shelf-title {
+    color: white;
+    padding: 10px 20px;
+    font-size: 1.2em;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.books-container {
+    display: flex;
+    overflow-x: auto;
+    padding: 10px;
+    gap: 2px;
+    scrollbar-width: none;  /* Firefoxのスクロールバーを非表示 */
+}
+
+.books-container::-webkit-scrollbar {
+    display: none;  /* Chromeのスクロールバーを非表示 */
+}
+
+/* 本のスタイル */
+.book-card {
+    min-width: 30px;
+    height: 180px;
+    flex-shrink: 0;
+    background: white;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.book-link {
+    text-decoration: none;
+    color: inherit;
+    height: 100%;
+    display: block;
+}
+
+.book-spine {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    padding: 5px 2px;
+    font-size: 0.8em;
+    z-index: 1;
+    background: linear-gradient(
+        to right,
+        rgba(0,0,0,0.1),
+        transparent 20%,
+        transparent 80%,
+        rgba(0,0,0,0.1)
+    );
+}
+
+/* ホバーエフェクト */
+.book-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    z-index: 10;
+}
+
+/* 本棚の木目効果 */
+.bookshelf::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+        90deg,
+        rgba(0,0,0,0.05),
+        rgba(0,0,0,0.05) 1px,
+        transparent 1px,
+        transparent 15px
+    );
+    pointer-events: none;
+}
+
+/* 新規登録ボタン */
+.add-book-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.detail-content {
+    margin-top: 2rem;
+}
+
+#register-memo {
+  display: flex;
+  justify-content: center;
+}
+
+#register-memo .mb-3 {
+  width: 83%;
+}
+
+#form-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 1040px;
+}
+
+#mandatory-items {
+  margin-left: 8%;
+}
+
+.register-cencel-button {
+  margin-left: 27%;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* 本の進捗表示のスタイル */
+.book-spine {
+    position: relative;
+    overflow: hidden;  /* 進捗バーがはみ出ないように */
+}
+
+.book-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    transition: height 0.3s ease;
+    opacity: 0.3;  /* 既存のデザインを邪魔しないように透明度を設定 */
+}
+
+/* 読書状態による色分け */
+.status-not_started .book-progress {
+    background-color: #6c757d;  /* 灰色 */
+}
+
+.status-reading .book-progress {
+    background-color: #28a745;  /* 緑色 */
+}
+
+.status-completed .book-progress {
+    background-color: #007bff;  /* 青色 */
+}
+
+.status-on_hold .book-progress {
+    background-color: #ffc107;  /* 黄色 */
+}
+
+/* 本の情報をホバー時に表示するためのツールチップ */
+.book-info-tooltip {
+    visibility: hidden;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    white-space: nowrap;
+    z-index: 1000;
+}
+
+.book-card:hover .book-info-tooltip {
+    visibility: visible;
+}
+
+
+
+
+
+/*.bookshelf {*/
+/*    background: #8b4513;*/
+/*    padding: 20px;*/
+/*    margin-bottom: 30px;*/
+/*    border-radius: 5px;*/
+/*}*/
+
+/*.shelf-title {*/
+/*    color: white;*/
+/*    margin-bottom: 10px;*/
+/*}*/
+
+/*.books-container {*/
+/*    display: flex;*/
+/*    overflow-x: auto;*/
+/*    padding: 10px 0;*/
+/*    gap: 20px;*/
+/*}*/
+
+/*.book-card {*/
+/*    min-width: 150px;*/
+/*    background: white;*/
+/*    padding: 10px;*/
+/*    border-radius: 5px;*/
+/*    transition: transform 0.2s;*/
+/*}*/
+
+/*.book-card:hover {*/
+/*    transform: translateY(-5px);*/
+/*}*/
+
+/*.book-link {*/
+/*    text-decoration: none;*/
+/*    color: inherit;*/
+/*}*/
+
+/*.book-spine {*/
+/*    height: 200px;*/
+/*    display: flex;*/
+/*    align-items: center;*/
+/*    justify-content: center;*/
+/*    writing-mode: vertical-rl;*/
+/*    text-orientation: mixed;*/
+/*    background: #f8f9fa;*/
+/*    padding: 10px;*/
+/*    border-radius: 3px;*/
+/*}*/
