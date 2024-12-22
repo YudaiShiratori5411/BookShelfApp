@@ -33,17 +33,55 @@ main {
     position: relative;
 }
 
-/* トップページの本棚専用のスタイル */
-/*.bookshelf-top-page {*/
-/*    margin-top: 0 !important;  .mt-4を打ち消す */
-/*}*/
-
 .shelf-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     color: white;
-    padding: 10px 20px;
-    font-size: 1.2em;
+    padding: 0 1rem;
+/*    padding: 10px 20px;*/
     background: rgba(0, 0, 0, 0.2);
 }
+
+/*.shelf-title {*/
+/*    display: flex;*/
+/*    justify-content: space-between;*/
+/*    align-items: center;*/
+/*    padding: 0.5rem 1rem;*/
+/*}*/
+
+.shelf-title .btn {
+    color: white;
+    background: none;
+    border: none;
+    font-size: 1.5em;
+}
+
+.shelf-title .btn:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.shelf-title .btn-link {
+    color: white;
+    text-decoration: none;
+    font-size: 1.5em;
+    padding: 0.25rem 0.5rem;
+}
+
+.shelf-title .btn-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/*.shelf-title .btn-link:hover {*/
+/*    color: rgba(255, 255, 255, 0.8);*/
+/*}*/
+
+/*.shelf-title {*/
+/*    color: white;*/
+/*    padding: 10px 20px;*/
+/*    font-size: 1.2em;*/
+/*    background: rgba(0, 0, 0, 0.2);*/
+/*}*/
 
 .books-container {
     display: flex;
@@ -57,16 +95,6 @@ main {
     display: none;  /* Chromeのスクロールバーを非表示 */
 }
 
-/* 本のスタイル */
-.book-card {
-    min-width: 30px;
-    height: 180px;
-    flex-shrink: 0;
-    background: white;
-    position: relative;
-    transition: all 0.3s ease;
-}
-
 .book-link {
     text-decoration: none;
     color: inherit;
@@ -74,33 +102,7 @@ main {
     display: block;
 }
 
-.book-spine {
-    height: 100%;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
-    padding: 5px 2px;
-    font-size: 0.8em;
-    z-index: 1;
-    background: linear-gradient(
-        to right,
-        rgba(0,0,0,0.1),
-        transparent 20%,
-        transparent 80%,
-        rgba(0,0,0,0.1)
-    );
-}
 
-/* ホバーエフェクト */
-.book-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    z-index: 10;
-}
 
 /* 本棚の木目効果 */
 .bookshelf::before {
@@ -167,18 +169,134 @@ main {
 
 
 
-
-
-
-
-
-
-
-/* 本の進捗表示のスタイル */
-.book-spine {
-    position: relative;
-    overflow: hidden;  /* 進捗バーがはみ出ないように */
+/* 本のスタイル */
+.book-title {
+    max-height: 140px;  /* コンテンツの最大高さを制限 */
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
+.book-card {
+    display: inline-block;
+/*    margin: 0 2px;*/
+    min-width: 30px;
+    height: 180px;
+    flex-shrink: 0;
+    background: white;
+    position: relative;
+    transition: transform 0.2s ease-in-out;
+    cursor: grab;
+}
+/*.books-container.sorting-mode .book-card {*/
+/*    transition: transform 0.2s ease-in-out;*/
+/*}*/
+/* ドラッグ&ドロップ関連のスタイル */
+.books-container.sorting-mode {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+}
+
+.books-container.sorting-mode .book-card {
+    cursor: grab;
+    transform: scale(0.98);
+    transition: all 0.3s ease;
+}
+
+.books-container.sorting-mode .book-card:hover {
+    transform: scale(1);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+/* ホバーエフェクト */
+.book-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    z-index: 10;
+}
+
+/* ドラッグ中のプレースホルダー */
+.drag-over {
+    border: 2px dashed #666;
+    background: rgba(255, 255, 255, 0.1);
+}
+.book-card:hover .book-info-tooltip {
+    visibility: visible;
+}
+
+/*.book-card.dragging {*/
+/*    opacity: 0.7;*/
+/*    border: 2px dashed #666;*/
+/*    background: transparent;*/
+/*    cursor: grabbing !important;*/
+/*    transform: scale(1.05) !important;*/
+/*}*/
+/* ドラッグ中の要素のスタイル */
+.book-card.dragging {
+/*    opacity: 0.8;*/
+    border: 2px dashed #666;
+/*    transform: scale(1.05);*/
+/*    cursor: grabbing;*/
+    z-index: 1000;
+}
+/* ドラッグ時のスタイル */
+.book-link.dragging {
+    height: 150px !important;  /* 高さを強制的に維持 */
+    opacity: 0.8;
+    transform: scale(1.05);
+    cursor: grabbing;
+}
+.book-card.dragging .book-spine {
+    box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.book-card.drag-over {
+    border-left: 2px solid #007bff;
+    border: 2px dashed #666;
+}
+/* ドラッグ中のゴースト（ブラウザデフォルトのドラッグ表示）を非表示 */
+.book-card:active {
+    cursor: grabbing;
+}
+
+.book-spine {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+/*    justify-content: center;*/
+    position: relative;
+    writing-mode: vertical-rl;
+/*    text-orientation: mixed;*/
+    padding: 5px 2px;
+    font-size: 0.8em;
+    overflow: hidden;
+    z-index: 1;
+    background: linear-gradient(
+        to right,
+        rgba(0,0,0,0.1),
+        transparent 20%,
+        transparent 80%,
+        rgba(0,0,0,0.1)
+    );
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 .book-progress {
     position: absolute;
@@ -222,58 +340,287 @@ main {
     z-index: 1000;
 }
 
-.book-card:hover .book-info-tooltip {
-    visibility: visible;
+
+
+
+
+
+
+
+
+
+
+.books-container.sorting .book-card {
+    cursor: move;
 }
 
 
 
 
 
-/*.bookshelf {*/
-/*    background: #8b4513;*/
-/*    padding: 20px;*/
-/*    margin-bottom: 30px;*/
-/*    border-radius: 5px;*/
-/*}*/
 
-/*.shelf-title {*/
+
+
+
+
+
+
+
+
+
+/*.shelf-menu-btn {*/
+/*    background: none;*/
+/*    border: none;*/
 /*    color: white;*/
-/*    margin-bottom: 10px;*/
-/*}*/
-
-/*.books-container {*/
-/*    display: flex;*/
-/*    overflow-x: auto;*/
-/*    padding: 10px 0;*/
-/*    gap: 20px;*/
-/*}*/
-
-/*.book-card {*/
-/*    min-width: 150px;*/
-/*    background: white;*/
-/*    padding: 10px;*/
-/*    border-radius: 5px;*/
-/*    transition: transform 0.2s;*/
-/*}*/
-
-/*.book-card:hover {*/
-/*    transform: translateY(-5px);*/
-/*}*/
-
-/*.book-link {*/
-/*    text-decoration: none;*/
-/*    color: inherit;*/
-/*}*/
-
-/*.book-spine {*/
-/*    height: 200px;*/
+/*    padding: 0.25rem 0.5rem;*/
 /*    display: flex;*/
 /*    align-items: center;*/
 /*    justify-content: center;*/
-/*    writing-mode: vertical-rl;*/
-/*    text-orientation: mixed;*/
-/*    background: #f8f9fa;*/
-/*    padding: 10px;*/
-/*    border-radius: 3px;*/
 /*}*/
+
+.shelf-menu {
+    margin-left: auto;
+}
+
+.shelf-menu-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5em;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.shelf-menu-btn:hover,
+.shelf-menu-btn:focus {
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.shelf-menu-btn span {
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+/*.shelf-menu-btn:hover {*/
+/*    color: rgba(255, 255, 255, 0.8) !important;*/
+/*}*/
+
+.shelf-menu-icon {
+    font-size: 1.5em;
+}
+
+/* 本棚メニュー関連のスタイル */
+/*.shelf-title {*/
+/*    display: flex;*/
+/*    justify-content: space-between;*/
+/*    align-items: center;*/
+/*}*/
+
+/*.shelf-menu-btn {*/
+/*    color: white;*/
+/*    padding: 0 10px;*/
+/*    background: none;*/
+/*    border: none;*/
+/*}*/
+
+/* ドラッグ&ドロップ時のスタイル */
+.books-container.sorting {
+    cursor: move;
+}
+
+
+
+
+
+
+
+.menu-icon {
+    font-size: 1.5em;
+    line-height: 1;
+}
+
+.dropdown {
+    margin-left: auto;
+}
+
+/*.dropdown-menu {*/
+/*    min-width: 100px;*/
+/*    padding: 0.5rem 0;*/
+/*}*/
+
+.dropdown-menu {
+    position: absolute;
+    display: none;
+    background-color: white;
+    min-width: 120px;
+    padding: 0.5rem 0;
+    margin-top: 0.125rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    border: 1px solid rgba(0,0,0,.15);
+    z-index: 1000;
+}
+
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-item {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+/*.dropdown-menu {*/
+/*    min-width: 120px;*/
+/*    background: #fff;*/
+/*    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);*/
+/*}*/
+
+/*.dropdown-item {*/
+/*    padding: 0.5rem 1rem;*/
+/*    cursor: pointer;*/
+/*}*/
+
+/*.dropdown-menu {*/
+/*    min-width: auto;*/
+/*    padding: 0.5rem 0;*/
+/*}*/
+
+/*.dropdown-item {*/
+/*    padding: 0.5rem 1rem;*/
+/*}*/
+
+
+
+
+
+/* 順番入れ替えモード時のスタイル */
+.books-container.sorting-mode {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+}
+
+.books-container.sorting-mode .book-card {
+    cursor: grab;
+    transform: scale(0.98);
+    transition: all 0.3s ease;
+}
+
+.books-container.sorting-mode .book-card:hover {
+    transform: scale(1);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+/* ドラッグ中のスタイル */
+/*.book-card.dragging {*/
+/*    cursor: grabbing !important;*/
+/*    opacity: 0.7;*/
+/*    transform: scale(1.05) !important;*/
+/*}*/
+
+
+/* 順番入れ替えモード時のメニューボタンのスタイル */
+.sorting-active .shelf-menu-btn {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+/* モード説明のスタイル */
+.sorting-mode-message {
+    display: none;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-top: 8px;
+    font-size: 0.9em;
+}
+
+.books-container.sorting-mode + .sorting-mode-message {
+    display: block;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.custom-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.menu-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5em;
+    cursor: pointer;
+    padding: 5px 10px;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    z-index: 1000;
+    border-radius: 4px;
+}
+
+.dropdown-content.show {
+    display: block;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

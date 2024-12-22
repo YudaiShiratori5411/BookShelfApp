@@ -1,21 +1,21 @@
 package com.example.bookshelf.entity;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import jakarta.persistence.OrderBy;
-
 import lombok.Data;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "shelves")
@@ -37,8 +37,8 @@ public class Shelf {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "shelf")
-    @OrderBy("title ASC")
+    @OneToMany(mappedBy = "shelf", fetch = FetchType.EAGER)
+    @OrderBy("display_order ASC")
     private List<Book> books = new ArrayList<>();
 
     @PrePersist

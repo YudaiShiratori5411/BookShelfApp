@@ -51,6 +51,12 @@ public class Book {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+    
+    @Column(name = "display_order")
+    private Integer displayOrder;
+    
+//    @Column(name = "shelf_id")
+//    private Long shelfId;
 
     @PrePersist
     protected void onCreate() {
@@ -83,5 +89,9 @@ public class Book {
     @ManyToOne
     @JoinColumn(name = "shelf_id")
     private Shelf shelf;
+    
+    public void setShelf(Shelf shelf) {
+        this.shelf = shelf;
+    }
 }
 

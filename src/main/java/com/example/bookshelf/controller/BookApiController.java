@@ -3,6 +3,7 @@ package com.example.bookshelf.controller;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,12 +15,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.bookshelf.dto.ReorderBooksRequest;
 import com.example.bookshelf.entity.Book;
 import com.example.bookshelf.entity.Book.ReadingStatus;
 import com.example.bookshelf.service.BookService;
 
 @RestController
-@RequestMapping("/api/books")
+@RequestMapping("/api")
+//@RequestMapping("/api/books")
 @CrossOrigin(origins = "http://localhost:8080")
 public class BookApiController {
     private final BookService bookService;
@@ -114,4 +117,16 @@ public class BookApiController {
         List<Book> books = bookService.getRecentlyUpdatedBooks();
         return ResponseEntity.ok(books);
     }
+    
+    @PostMapping("/books/reorder")
+    public ResponseEntity<?> reorderBooks(@RequestBody ReorderBooksRequest request) {
+        try {
+            bookService.reorderBooks(request.getShelfId(), request.getBookIds());
+            return ResponseEntity.ok(Map.of("message", "順序を保存しました"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", e.getMessage()));
+        }
+    }
+
 }

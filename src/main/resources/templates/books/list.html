@@ -3,9 +3,7 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/layout}">
 <head>
-    <meta charset="UTF-8">
     <title>本の一覧</title>
-    <link rel="stylesheet" th:href="@{/css/bookshelf.css}">
 </head>
 <body>
     <div layout:fragment="content" class="bookshelf-top-page">
@@ -13,14 +11,37 @@
         <div th:each="shelf : ${shelves}" class="bookshelf">
             <div class="shelf-title">
                 <span th:text="${shelf.name}">カテゴリー名</span>
+                <!-- メニューボタン部分 -->
+                <div class="dropdown">
+                    <button type="button"
+                            class="btn btn-link dropdown-toggle"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        <span class="text-white"></span>
+                    </button>
+                    <!-- メニューの内容 -->
+                    <ul class="dropdown-menu">
+                        <li>
+                            <button type="button"
+                                    class="dropdown-item sort-books"
+                                    th:data-shelf-id="${shelf.id}">
+                                順番入れ替え
+                            </button>
+                        </li>
+                    </ul>
+                </div>
             </div>
-            <div class="books-container">
-                <div th:each="book : ${shelf.books}" class="book-card">
+
+            <div class="books-container" th:data-shelf-id="${shelf.id}">
+                <div th:each="book : ${shelf.books}"
+                     class="book-card"
+                     th:data-book-id="${book.id}"
+                     draggable="true">
                     <a th:href="@{/books/{id}(id=${book.id})}" class="book-link">
                         <div class="book-spine" th:classappend="${'status-' + #strings.toLowerCase(book.readingStatus)}">
                             <span class="book-title" th:text="${book.title}">タイトル</span>
                             <!-- 進捗バーを追加 -->
-                            <div class="book-progress" 
+                            <div class="book-progress"
                                  th:with="current=${book.currentPage != null ? book.currentPage : 0},
                                           total=${book.totalPages != null ? book.totalPages : 1},
                                           progress=${total > 0 ? (current * 100.0 / total) : 0}"
@@ -29,13 +50,17 @@
                             <!-- ホバー時に表示される進捗情報 -->
                             <div class="book-info-tooltip">
                                 <span th:with="current=${book.currentPage != null ? book.currentPage : 0},
-                                               total=${book.totalPages != null ? book.totalPages : 1}"
-                                      th:text="${current + '/' + total + 'ページ (' + 
-                                               #numbers.formatDecimal(current * 100.0 / total, 1, 1) + '%)'}"
+                                             total=${book.totalPages != null ? book.totalPages : 1}"
+                                      th:text="${current + '/' + total + 'ページ (' +
+                                      #numbers.formatDecimal(current * 100.0 / total, 1, 1) + '%)'}"
                                 >進捗状況</span>
                             </div>
                         </div>
                     </a>
+                </div>
+                <!-- 順番入れ替えモード時のメッセージ -->
+                <div class="sorting-mode-message">
+                    ドラッグ＆ドロップで本の順序を変更できます。完了したら再度メニューから「順番入れ替え」をクリックしてください。
                 </div>
             </div>
         </div>
@@ -45,95 +70,14 @@
             新しい本を登録
         </a>
     </div>
+
+    <th:block layout:fragment="scripts">
+        <script th:src="@{/js/bookshelf.js}"></script>
+    </th:block>
 </body>
-<th:block layout:fragment="scripts">
-    <script th:src="@{/js/bookshelf.js}"></script>
-</th:block>
 </html>
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-<!--<!DOCTYPE html>-->
-<!--<html xmlns:th="http://www.thymeleaf.org"-->
-<!--      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"-->
-<!--      layout:decorate="~{layouts/layout}">-->
-<!--<head>-->
-<!--    <meta charset="UTF-8">-->
-<!--    <title>本棚</title>-->
-<!--    <link rel="stylesheet" th:href="@{/css/bookshelf.css}">-->
-<!--</head>-->
-<!--<body>-->
-<!--    <div layout:fragment="content">-->
-<!--        <div class="container-fluid">-->
-<!--             各本棚（カテゴリー） -->
-<!--            <div th:each="shelf : ${shelves}" class="bookshelf">-->
-<!--                <div class="shelf-title">-->
-<!--                    <h3 th:text="${shelf.name}">カテゴリー名</h3>-->
-<!--                    <button class="btn btn-sm btn-outline-light">編集</button>-->
-<!--                </div>-->
-                
-<!--                <div class="books-container">-->
-<!--                     本のカード -->
-<!--                    <div th:each="book : ${shelf.books}" class="book-card">-->
-<!--                        <div class="book-spine">-->
-<!--                            <h5 th:text="${book.title}" class="mb-0">タイトル</h5>-->
-<!--                        </div>-->
-<!--                        <div class="book-info mt-2">-->
-<!--                            <p class="mb-1" th:text="${book.author}">著者</p>-->
-<!--                            <div class="progress" style="height: 5px;">-->
-<!--                                <div class="progress-bar" role="progressbar"-->
-<!--                                     th:with="current=${book.currentPage != null ? book.currentPage : 0},-->
-<!--                                              total=${book.totalPages != null ? book.totalPages : 1}"-->
-<!--                                     th:style="'width: ' + ${total > 0 ? (current * 100 / total) : 0} + '%'">-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                            <small class="text-muted" -->
-<!--                                   th:text="${book.currentPage + '/' + book.totalPages + ' (' + -->
-<!--                                           #numbers.formatDecimal(book.currentPage * 100.0 / book.totalPages, 1, 1) + '%)'">-->
-<!--                            </small>-->
-<!--                        </div>-->
-                        
-<!--                         操作ボタン -->
-<!--                        <div class="btn-group btn-group-sm w-100 mt-2">-->
-<!--                            <a th:href="@{/books/{id}(id=${book.id})}" -->
-<!--                               class="btn btn-outline-primary">詳細</a>-->
-<!--                            <button class="btn btn-outline-danger"-->
-<!--                                    data-bs-toggle="modal" -->
-<!--                                    th:data-bs-target="'#deleteModal-' + ${book.id}">-->
-<!--                                削除-->
-<!--                            </button>-->
-<!--                        </div>-->
-<!--                    </div>-->
-
-<!--                     新規追加ボタン -->
-<!--                    <div class="book-card d-flex align-items-center justify-content-center">-->
-<!--                        <a th:href="@{/books/new(shelf=${shelf.id})}" -->
-<!--                           class="btn btn-outline-primary">-->
-<!--                            <i class="bi bi-plus-lg"></i> 本を追加-->
-<!--                        </a>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </div>-->
-
-<!--             新しい本棚を追加するボタン -->
-<!--            <div class="text-center mt-4">-->
-<!--                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newShelfModal">-->
-<!--                    新しい本棚を追加-->
-<!--                </button>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </div>-->
-<!--</body>-->
-<!--</html>-->
 

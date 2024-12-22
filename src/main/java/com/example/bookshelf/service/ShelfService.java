@@ -17,9 +17,9 @@ public class ShelfService {
         this.shelfRepository = shelfRepository;
     }
 
-    public List<Shelf> getAllShelves() {
-        return shelfRepository.findAllByOrderByDisplayOrderAsc();
-    }
+//    public List<Shelf> getAllShelves() {
+//        return shelfRepository.findAllByOrderByDisplayOrderAsc();
+//    }
 
     public Shelf getShelfById(Long id) {
         return shelfRepository.findById(id)
@@ -30,5 +30,16 @@ public class ShelfService {
         Shelf shelf = getShelfById(id);
         shelf.setDisplayOrder(newOrder);
         shelfRepository.save(shelf);
+    }
+    
+    public List<Shelf> getAllShelvesWithBooks() {
+        List<Shelf> shelves = shelfRepository.findAllByOrderByDisplayOrderAsc();
+        shelves.forEach(shelf -> {
+            System.out.println("Shelf: " + shelf.getName() + ", Books count: " + shelf.getBooks().size());
+            shelf.getBooks().forEach(book -> {
+                System.out.println(" - Book: " + book.getTitle());
+            });
+        });
+        return shelves;
     }
 }

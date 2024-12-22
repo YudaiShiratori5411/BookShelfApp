@@ -137,6 +137,21 @@ public class BookService {
         book.setReadingStatus(status);
         return bookRepository.save(book);
     }
+    
+    // 順序保存のメソッド
+    @Transactional
+    public void reorderBooks(Long shelfId, List<Long> bookIds) {
+        try {
+            for (int i = 0; i < bookIds.size(); i++) {
+                Book book = bookRepository.findById(bookIds.get(i))
+                        .orElseThrow(() -> new RuntimeException("本が見つかりません"));
+                book.setDisplayOrder(i);
+                bookRepository.save(book);
+            }
+        } catch (Exception e) {
+            throw e;
+        }
+    }
 }
 
 
