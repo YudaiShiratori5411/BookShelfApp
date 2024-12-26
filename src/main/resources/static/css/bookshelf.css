@@ -193,7 +193,7 @@ main {
 
 /* 本のスタイル */
 .book-title {
-    max-height: 140px;  /* コンテンツの最大高さを制限 */
+/*    max-height: 140px;*/
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -262,7 +262,7 @@ main {
 }
 /* ドラッグ時のスタイル */
 .book-link.dragging {
-    height: 150px !important;  /* 高さを強制的に維持 */
+    height: 150px !important;
     opacity: 0.8;
     transform: scale(1.05);
     cursor: grabbing;
