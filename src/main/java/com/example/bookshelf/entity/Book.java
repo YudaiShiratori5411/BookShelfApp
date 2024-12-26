@@ -54,9 +54,6 @@ public class Book {
     
     @Column(name = "display_order")
     private Integer displayOrder;
-    
-//    @Column(name = "shelf_id")
-//    private Long shelfId;
 
     @PrePersist
     protected void onCreate() {

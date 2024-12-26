@@ -22,7 +22,6 @@ import com.example.bookshelf.service.BookService;
 
 @RestController
 @RequestMapping("/api")
-//@RequestMapping("/api/books")
 @CrossOrigin(origins = "http://localhost:8080")
 public class BookApiController {
     private final BookService bookService;

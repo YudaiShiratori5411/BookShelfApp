@@ -54,6 +54,7 @@ main {
     color: white;
     background: none;
     border: none;
+    outline: none;
     font-size: 1.5em;
 }
 
@@ -68,9 +69,9 @@ main {
     padding: 0.25rem 0.5rem;
 }
 
-.shelf-title .btn-link:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
+/*.shelf-title .btn-link:hover {*/
+/*    background-color: rgba(255, 255, 255, 0.1);*/
+/*}*/
 
 /*.shelf-title .btn-link:hover {*/
 /*    color: rgba(255, 255, 255, 0.8);*/
@@ -478,6 +479,30 @@ main {
 
 .dropdown-item:hover {
     background-color: #f8f9fa;
+}
+
+
+/* ドロップダウンボタンの枠線を消す */
+.btn.dropdown-toggle:focus,
+.btn.dropdown-toggle:active {
+    box-shadow: none !important;
+    outline: none !important;
+    border: none !important;
+}
+
+/* ドロップダウンメニュー全体の枠線を消す */
+.dropdown-menu {
+    box-shadow: none !important;
+    outline: none !important;
+    border: none !important;
+}
+
+/* ドロップダウンメニューの項目の枠線を消す */
+.dropdown-item:focus,
+.dropdown-item:active {
+    box-shadow: none !important;
+    outline: none !important;
+    border: none !important;
 }
 
 /*.dropdown-menu {*/

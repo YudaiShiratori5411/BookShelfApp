@@ -17,10 +17,6 @@ public class ShelfService {
         this.shelfRepository = shelfRepository;
     }
 
-//    public List<Shelf> getAllShelves() {
-//        return shelfRepository.findAllByOrderByDisplayOrderAsc();
-//    }
-
     public Shelf getShelfById(Long id) {
         return shelfRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("本棚が見つかりません: " + id));
