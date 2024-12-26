@@ -10,26 +10,31 @@
         <!-- 各本棚（カテゴリー） -->
         <div th:each="shelf : ${shelves}" class="bookshelf">
             <div class="shelf-title">
-                <span th:text="${shelf.name}">カテゴリー名</span>
-                <!-- メニューボタン部分 -->
-                <div class="dropdown">
-                    <button type="button"
-                            class="btn btn-link dropdown-toggle"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false">
-                        <span class="text-white"></span>
-                    </button>
-                    <!-- メニューの内容 -->
-                    <ul class="dropdown-menu">
-                        <li>
-                            <button type="button"
-                                    class="dropdown-item sort-books"
-                                    th:data-shelf-id="${shelf.id}">
-                                順番入れ替え
-                            </button>
-                        </li>
-                    </ul>
+                <div class="shelf-name">
+                    <span th:text="${shelf.name}">カテゴリー名</span>
                 </div>
+                <div class="shelf-controls">
+                    <span class="book-count" th:text="|全${shelf.books.size()}冊|">全n冊</span>
+                    <!-- メニューボタン部分 -->
+                    <div class="dropdown">
+                        <button type="button"
+                                class="btn btn-link dropdown-toggle"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                            <span class="text-white"></span>
+                        </button>
+                        <!-- メニューの内容 -->
+                        <ul class="dropdown-menu">
+                            <li>
+                                <button type="button"
+                                        class="dropdown-item sort-books"
+                                        th:data-shelf-id="${shelf.id}">
+                                    順番入れ替え
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>   
             </div>
 
             <div class="books-container" th:data-shelf-id="${shelf.id}">
