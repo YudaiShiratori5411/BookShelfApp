@@ -22,46 +22,76 @@
 
     <!-- メインコンテンツ -->
     <div class="container mt-4">
-        <h3>読書進捗</h3>
-        <p>1日平均ページ数: <span th:text="${averagePages}">36.3</span>ページ</p>
-        <p>予測読了日: <span th:text="${predictedDate}">2024/12/29</span></p>
-
-        <h3>読書セッションの記録</h3>
-        <form method="post">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-            <div class="mb-3">
-                <label for="startTime" class="form-label">開始時間</label>
-                <input type="datetime-local" id="startTime" name="startTime" class="form-control" required>
+        <!-- 上部の2カラムセクション -->
+        <div class="row g-3">
+            <!-- 左カラム：読書進捗 -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h3>読書進捗</h3>
+                        <!-- 平均ページ数 -->
+                        <div class="d-flex justify-content-between align-items-center border rounded p-2 mb-2">
+                            <div class="text-muted">1日平均ページ数</div>
+                            <div class="text-primary h4 mb-0"><span th:text="${averagePages}">0.4</span>ページ</div>
+                        </div>
+                        <!-- 予測読了日 -->
+                        <div class="d-flex justify-content-between align-items-center border rounded p-2">
+                            <div class="text-muted">予測読了日</div>
+                            <div class="text-primary h4 mb-0" th:text="${#temporals.format(predictedDate, 'yyyy/MM/dd')}">2024/12/28</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="mb-3">
-                <label for="endTime" class="form-label">終了時間</label>
-                <input type="datetime-local" id="endTime" name="endTime" class="form-control" required>
+    
+            <!-- 右カラム：読書セッションの記録 -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="mb-3">読書セッションの記録</h3>
+                        <form method="post" class="row g-2">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                            <div class="col-md-4">
+                                <label class="form-label small">開始時間</label>
+                                <input type="datetime-local" name="startTime" class="form-control form-control-sm" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small">終了時間</label>
+                                <input type="datetime-local" name="endTime" class="form-control form-control-sm" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small">ページ数</label>
+                                <input type="number" name="pagesRead" class="form-control form-control-sm" required>
+                            </div>
+                            <div class="col-12 mt-2 text-center">
+                                <button type="submit" class="btn btn-primary btn-sm">記録する</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
-            <div class="mb-3">
-                <label for="pagesRead" class="form-label">読んだページ数</label>
-                <input type="number" id="pagesRead" name="pagesRead" class="form-control" required>
-            </div>
-            <button type="submit" class="btn btn-primary">記録</button>
-        </form>
+        </div>
         
         <!-- 読書進捗グラフ -->
-        <div class="mt-4">
-            <h3>読書進捗グラフ</h3>
-            
-            <!-- 期間選択タブ -->
-            <div class="btn-group mb-3" role="group" aria-label="期間選択">
-                <button type="button" class="btn btn-outline-primary active" data-period="daily">日別</button>
-                <button type="button" class="btn btn-outline-primary" data-period="weekly">週別</button>
-                <button type="button" class="btn btn-outline-primary" data-period="monthly">月別</button>
-                <button type="button" class="btn btn-outline-primary" data-period="yearly">年別</button>
-            </div>
-        
-            <div class="row">
-                <div class="col-md-6">
-                    <canvas id="dailyProgressChart"></canvas>
+        <div class="card mt-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3>読書進捗グラフ</h3>
+                    <!-- 期間選択タブを右端に配置 -->
+                    <div class="btn-group" role="group" aria-label="期間選択">
+                        <button type="button" class="btn btn-primary active" data-period="daily">日別</button>
+                        <button type="button" class="btn btn-outline-primary" data-period="weekly">週別</button>
+                        <button type="button" class="btn btn-outline-primary" data-period="monthly">月別</button>
+                        <button type="button" class="btn btn-outline-primary" data-period="yearly">年別</button>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <canvas id="cumulativeProgressChart"></canvas>
+            
+                <div class="row">
+                    <div class="col-md-6">
+                        <canvas id="dailyProgressChart"></canvas>
+                    </div>
+                    <div class="col-md-6">
+                        <canvas id="cumulativeProgressChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>

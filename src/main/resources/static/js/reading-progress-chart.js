@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
    // グローバルスコープのsessionsを使用
    if (typeof sessions === 'undefined') {
        console.error('セッションデータが見つかりません');
-       return;
+       return;  
    }
 
    // グローバル変数としてチャートインスタンスを保持
@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
        
        sessions.forEach(session => {
            // タイムゾーンを考慮した日付処理
-           const date = new Date(session.startTime);
+           const date = new Date(session.startTime); 
            const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
            let key;
            
@@ -184,15 +184,23 @@ document.addEventListener('DOMContentLoaded', () => {
        });
    };
 
-   // 期間選択ボタンのイベントハンドラ
-   document.querySelectorAll('[data-period]').forEach(button => {
-       button.addEventListener('click', (e) => {
-           const period = e.target.dataset.period;
-           document.querySelectorAll('[data-period]').forEach(btn => 
-               btn.classList.remove('active'));
-           e.target.classList.add('active');
-           
-           // 選択された期間でグラフを描画
+   // 期間選択ボタンのイベント処理
+   const periodButtons = document.querySelectorAll('[data-period]');
+   
+   periodButtons.forEach(button => {
+       button.addEventListener('click', function() {
+           // アクティブなボタンのスタイルを更新
+           periodButtons.forEach(btn => {
+               btn.classList.remove('active');
+               btn.classList.remove('btn-primary');
+               btn.classList.add('btn-outline-primary');
+           });
+           this.classList.add('active');
+           this.classList.remove('btn-outline-primary');
+           this.classList.add('btn-primary');
+
+           // 選択された期間でグラフを更新
+           const period = this.dataset.period;
            drawDailyProgressChart(sessions, period);
            drawCumulativeProgressChart(sessions, period);
        });
