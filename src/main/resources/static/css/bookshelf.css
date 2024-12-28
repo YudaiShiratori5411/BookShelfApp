@@ -302,6 +302,16 @@ main {
     );
 }
 
+.book-detail-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;  /* ボタン間の間隔 */
+    align-items: center;
+}
+
+.book-detail-actions .btn {
+    min-width: 100px;  /* ボタンの最小幅を統一 */
+}
 
 
 
@@ -382,7 +392,21 @@ main {
 
 
 
+.mt-4 {
+    display: flex;
+    gap: 10px;  /* ボタン間の間隔 */
+    justify-content: flex-start;  /* 左寄せ */
+    align-items: center;
+}
 
+.mt-4 .btn {
+    min-width: 100px;  /* ボタンの最小幅を統一 */
+}
+
+/* 読書進捗管理ボタンの特別なスタイル */
+.btn-info {
+    color: #fff;  /* テキストを白に */
+}
 
 
 
@@ -666,7 +690,28 @@ main {
 
 
 
+/*進捗管理ページ関連*/
+.reading-progress {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
 
+.progress-stats {
+    margin-bottom: 30px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
 
+.reading-form {
+    background: #fff;
+    padding: 20px;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+}
 
 

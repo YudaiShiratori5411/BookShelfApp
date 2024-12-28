@@ -78,6 +78,7 @@
                     <!-- 操作ボタン -->
                     <div class="mt-4">
                         <a th:href="@{/books/{id}/edit(id=${book.id})}" class="btn btn-primary">編集</a>
+                        <a th:href="@{/books/{id}/progress(id=${book.id})}" class="btn btn-info">読書進捗管理</a>
                         <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteConfirmModal">
                             削除
                         </button>
