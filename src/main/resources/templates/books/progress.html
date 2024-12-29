@@ -23,10 +23,10 @@
     <!-- メインコンテンツ -->
     <div class="container mt-4">
         <!-- 上部の2カラムセクション -->
-        <div class="row g-3">
+        <div class="row g-3 h-100">
             <!-- 左カラム：読書進捗 -->
-            <div class="col-md-6">
-                <div class="card">
+            <div class="col-md-6 d-flex">
+                <div class="card w-100">
                     <div class="card-body">
                         <h3>読書進捗</h3>
                         <!-- 平均ページ数 -->
@@ -42,10 +42,10 @@
                     </div>
                 </div>
             </div>
-    
+        
             <!-- 右カラム：読書セッションの記録 -->
-            <div class="col-md-6">
-                <div class="card">
+            <div class="col-md-6 d-flex">
+                <div class="card w-100">
                     <div class="card-body">
                         <h3 class="mb-3">読書セッションの記録</h3>
                         <form method="post" class="row g-2">
@@ -96,39 +96,42 @@
             </div>
         </div>
 
-        <h3 class="mt-4">読書記録</h3>
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>日付</th>
-                        <th>開始時間</th>
-                        <th>終了時間</th>
-                        <th>読んだページ数</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="readingSession : ${sessions}">
-                        <td th:text="${readingSession.startTime}">2024/12/27</td>
-                        <td th:text="${readingSession.startTime}">09:00</td>
-                        <td th:text="${readingSession.endTime}">12:00</td>
-                        <td th:text="${readingSession.pagesRead}">20</td>
-                        <td>
-                            <!-- 削除フォーム -->
-                            <form th:action="@{/books/{bookId}/progress/sessions/{sessionId}(bookId=${book.id}, sessionId=${readingSession.id})}" 
-                                  method="post" style="display:inline;">
-                                <input type="hidden" name="_method" value="DELETE" />
-                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                                <button type="submit" class="btn btn-danger btn-sm" 
-                                        onclick="return confirm('このセッションを削除しますか？')">削除</button>
-                            </form>
-                            <button class="btn btn-primary btn-sm" 
-                                    th:onclick="'editSession(' + ${readingSession.id} + ')'">編集</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="sessions-history mt-4">
+            <h3>読書記録</h3>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="text-center">日付</th>
+                            <th class="text-center">開始時間</th>
+                            <th class="text-center">終了時間</th>
+                            <th class="text-center">読んだページ数</th>
+                            <th class="text-center">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="readingSession : ${sessions}">
+                            <!-- 日付と時間を分けて表示 -->
+                            <td class="text-center" th:text="${#temporals.format(readingSession.startTime, 'yyyy/MM/dd')}">2024/12/27</td>
+                            <td class="text-center" th:text="${#temporals.format(readingSession.startTime, 'HH:mm')}">10:00</td>
+                            <td class="text-center" th:text="${#temporals.format(readingSession.endTime, 'HH:mm')}">11:00</td>
+                            <td class="text-center" th:text="${readingSession.pagesRead + 'ページ'}">30ページ</td>
+                            <td class="text-center">
+                                <!-- 削除フォーム -->
+                                <form th:action="@{/books/{bookId}/progress/sessions/{sessionId}(bookId=${book.id}, sessionId=${readingSession.id})}" 
+                                      method="post" style="display:inline;">
+                                    <input type="hidden" name="_method" value="DELETE" />
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <button type="submit" class="btn btn-danger btn-sm" 
+                                            onclick="return confirm('このセッションを削除しますか？')">削除</button>
+                                </form>
+                                <button class="btn btn-primary btn-sm" 
+                                        th:onclick="'editSession(' + ${readingSession.id} + ')'">編集</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
         
         <!-- ページネーション -->
@@ -211,5 +214,12 @@
     <script th:src="@{/js/readingSession.js}"></script>
 </body>
 </html>
+
+
+
+
+
+
+
 
 

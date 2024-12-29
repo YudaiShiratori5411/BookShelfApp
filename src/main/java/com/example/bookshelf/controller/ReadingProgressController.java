@@ -53,29 +53,27 @@ public class ReadingProgressController {
 
         // セッションデータのタイムゾーン調整
         List<ReadingSession> adjustedSessions = sessionPage.getContent().stream()
-                .map(session -> {
-                    ReadingSession adjustedSession = new ReadingSession();
-                    adjustedSession.setId(session.getId());
-                    adjustedSession.setBook(session.getBook());
-                    
-                    // 開始時間の調整
-                    LocalDateTime localStartTime = session.getStartTime()
-                            .atZone(ZoneOffset.UTC)
-                            .withZoneSameInstant(ZoneId.systemDefault())
-                            .toLocalDateTime();
-                    adjustedSession.setStartTime(localStartTime);
-                    
-                    // 終了時間の調整
-                    LocalDateTime localEndTime = session.getEndTime()
-                            .atZone(ZoneOffset.UTC)
-                            .withZoneSameInstant(ZoneId.systemDefault())
-                            .toLocalDateTime();
-                    adjustedSession.setEndTime(localEndTime);
-                    
-                    adjustedSession.setPagesRead(session.getPagesRead());
-                    return adjustedSession;
-                })
-                .collect(Collectors.toList());
+            .map(session -> {
+                ReadingSession adjustedSession = new ReadingSession();
+                adjustedSession.setId(session.getId());
+                adjustedSession.setBook(session.getBook());
+                
+                // 開始時間の調整（UTCからローカル時間に変換）
+                LocalDateTime localStartTime = session.getStartTime()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime();
+                adjustedSession.setStartTime(localStartTime);
+                
+                // 終了時間の調整（UTCからローカル時間に変換）
+                LocalDateTime localEndTime = session.getEndTime()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime();
+                adjustedSession.setEndTime(localEndTime);
+                
+                adjustedSession.setPagesRead(session.getPagesRead());
+                return adjustedSession;
+            })
+            .collect(Collectors.toList());
 
         model.addAttribute("book", book);
         model.addAttribute("sessions", adjustedSessions);
