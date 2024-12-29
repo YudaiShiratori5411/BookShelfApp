@@ -16,7 +16,9 @@
                         <!-- タイトル、著者、カテゴリー -->
                         <div class="row mb-3 d-flex justify-content-center">
                             <div class="col-md-4">
-                                <label for="title" class="form-label">タイトル <span class="text-danger">* (最大 23 文字)</span></label>
+                                <label for="title" class="form-label">
+                                    タイトル <span class="text-danger">*</span> (最大 23 文字)
+                                </label>
                                 <input type="text" class="form-control" id="title" th:field="*{title}" required>
                                 <div class="invalid-feedback">タイトルを入力してください</div>
                             </div>

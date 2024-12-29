@@ -39,15 +39,14 @@
     
                             <!-- 基本情報 -->
                             <div class="mb-4">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <p><strong>カテゴリー：</strong> 
+                                <div class="row align-items-center">
+                                    <div class="col-md-3">
+                                        <p class="mb-0"><strong>カテゴリー：</strong> 
                                             <span class="badge bg-primary" th:text="${book.category}">カテゴリー</span>
                                         </p>
                                     </div>
-                                    <!-- 読書状態の編集フォームを追加 -->
-                                    <div class="col-md-6">
-                                        <p><strong>読書状態：</strong> 
+                                    <div class="col-md-3">
+                                        <p class="mb-0"><strong>読書状態：</strong> 
                                             <span class="badge" 
                                                   th:with="status=${book.readingStatus}"
                                                   th:classappend="${status != null ? 
@@ -58,9 +57,19 @@
                                                   th:text="${status != null ? status.displayName : '未設定'}">状態</span>
                                         </p>
                                     </div>
+                                    <div class="col-md-3">
+                                        <p class="mb-0"><strong>登録日：</strong> 
+                                            <span th:text="${#temporals.format(book.createdAt, 'yyyy/MM/dd')}">登録日</span>
+                                        </p>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <p class="mb-0"><strong>最終更新：</strong> 
+                                            <span th:text="${#temporals.format(book.updatedAt, 'yyyy/MM/dd')}">更新日</span>
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-    
+                            
                             <!-- メモ -->
                             <div class="mb-4">
                                 <h5>メモ</h5>
@@ -68,10 +77,10 @@
                             </div>
     
                             <!-- タイムスタンプ -->
-                            <div class="text-muted small">
-                                <p>登録日時: <span th:text="${#temporals.format(book.createdAt, 'yyyy/MM/dd HH:mm')}">登録日時</span></p>
-                                <p>更新日時: <span th:text="${#temporals.format(book.updatedAt, 'yyyy/MM/dd HH:mm')}">更新日時</span></p>
-                            </div>
+<!--                            <div class="text-muted small">-->
+<!--                                <p>登録日時: <span th:text="${#temporals.format(book.createdAt, 'yyyy/MM/dd HH:mm')}">登録日時</span></p>-->
+<!--                                <p>更新日時: <span th:text="${#temporals.format(book.updatedAt, 'yyyy/MM/dd HH:mm')}">更新日時</span></p>-->
+<!--                            </div>-->
                         </div>
                     </div>
     
