@@ -39,7 +39,27 @@
                                     仕切りを追加
                                 </button>
                             </li>
+                            <li>
+                                <button type="button"
+                                        class="dropdown-item delete-dividers-mode"
+                                        th:data-shelf-id="${shelf.id}">
+                                    仕切りを削除する
+                                </button>
+                            </li>
                         </ul>
+                        
+                        <!-- 仕切りのHTML-->
+                        <div th:if="${item instanceof T(com.example.bookshelf.entity.Divider)}"
+                             class="shelf-divider"
+                             th:data-divider-id="${item.id}"
+                             th:data-position="${item.position}"
+                             draggable="false">
+                            <span class="divider-label" th:text="${item.label}">仕切りラベル</span>
+                            <button type="button" 
+                                    class="delete-divider-btn"
+                                    style="display: none;"
+                                    th:data-divider-id="${item.id}">×</button>
+                        </div>
                     </div>
                 </div>   
             </div>

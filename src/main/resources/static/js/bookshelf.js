@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', function() {
         new bootstrap.Dropdown(dropdown);
     });
 
-    // デバッグ用のログ
     console.log('Found dropdowns:', dropdowns.length);
 
     // 順番入れ替えボタンのイベントリスナー
@@ -52,6 +51,27 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // 仕切り削除モードのイベントリスナー
+    document.querySelectorAll('.delete-dividers-mode').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const shelfId = this.getAttribute('data-shelf-id');
+            const container = document.querySelector(`.books-container[data-shelf-id="${shelfId}"]`);
+            toggleDeleteDividersMode(container, this);
+
+            // ドロップダウンメニューを閉じる
+            const dropdownMenu = this.closest('.dropdown-menu');
+            if (dropdownMenu) {
+                const dropdown = bootstrap.Dropdown.getInstance(dropdownMenu.previousElementSibling);
+                if (dropdown) {
+                    dropdown.hide();
+                }
+            }
+        });
+    });
+
     // 削除ボタンのイベントリスナー
     document.addEventListener('click', function(e) {
         if (e.target.classList.contains('delete-divider-btn')) {
@@ -63,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Cache-Control': 'no-cache'  // キャッシュを無効化
+                        'Cache-Control': 'no-cache'
                     }
                 })
                 .then(response => {
@@ -72,9 +92,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     // 画面から要素を削除
                     dividerElement.remove();
-                    
-                    // 削除成功時にページのキャッシュを更新
-                    window.location.reload(true);
                 })
                 .catch(error => {
                     console.error('Error deleting divider:', error);
@@ -95,6 +112,29 @@ function toggleSortMode(container, button) {
         button.textContent = '順番入れ替え';
         disableDragAndDrop(container);
         saveNewOrder(container);
+        window.location.reload();
+    }
+}
+
+// 仕切り削除モードの切り替え関数
+function toggleDeleteDividersMode(container, button) {
+    const dividers = container.querySelectorAll('.shelf-divider');
+    const isInDeleteMode = !dividers[0]?.classList.contains('delete-mode');
+    
+    if (isInDeleteMode) {
+        button.textContent = '仕切り削除を完了';
+        dividers.forEach(divider => {
+            divider.classList.add('delete-mode');
+            const deleteBtn = divider.querySelector('.delete-divider-btn');
+            if (deleteBtn) deleteBtn.style.display = 'block';
+        });
+    } else {
+        button.textContent = '仕切りを削除する';
+        dividers.forEach(divider => {
+            divider.classList.remove('delete-mode');
+            const deleteBtn = divider.querySelector('.delete-divider-btn');
+            if (deleteBtn) deleteBtn.style.display = 'none';
+        });
     }
 }
 
@@ -289,8 +329,6 @@ function saveNewOrder(container) {
             }
 
             console.log('Successfully saved all positions');
-            // 成功した場合のみリロード
-//            window.location.reload();
 
         } catch (error) {
             console.error('Error saving positions:', error);
@@ -355,23 +393,19 @@ function createDividerElement(divider) {
     element.className = 'shelf-divider';
     element.setAttribute('data-divider-id', divider.id);
     element.setAttribute('data-position', divider.position);
-    element.draggable = true;
+    element.draggable = false;
 
     const labelElement = document.createElement('span');
     labelElement.className = 'divider-label';
     labelElement.textContent = divider.label;
+    element.appendChild(labelElement);
 
+    // 削除ボタン（デフォルトでは非表示）
     const deleteButton = document.createElement('button');
     deleteButton.className = 'delete-divider-btn';
-    deleteButton.innerHTML = '×';
-    deleteButton.onclick = (e) => {
-        e.stopPropagation();
-        if (confirm('この仕切りを削除してもよろしいですか？')) {
-            deleteDivider(divider.id, element);
-        }
-    };
-
-    element.appendChild(labelElement);
+    deleteButton.textContent = '×';
+    deleteButton.style.display = 'none';  // デフォルトで非表示に設定
+    deleteButton.setAttribute('data-divider-id', divider.id);
     element.appendChild(deleteButton);
 
     return element;

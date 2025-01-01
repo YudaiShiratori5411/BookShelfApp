@@ -22,25 +22,48 @@
 }
 
 .delete-divider-btn {
+    display: none;
     position: absolute;
-    bottom: 1px;  /* topをbottomに変更 */
+    bottom: 1px;
     right: 10px;
     background: none;
     border: none;
-    color: #ffffff;  /* ✕の色も白に変更 */
+    color: #ffffff;
     cursor: pointer;
-/*    padding: 2px 6px;*/
     font-size: 1.2em;
     transition: color 0.2s;
 }
 
 .delete-divider-btn:hover {
-    color: #ff4444;  /* ホバー時の色はそのまま */
+    color: #ff4444;
 }
 
 .shelf-divider.dragging {
     opacity: 0.6;
     cursor: move;
+}
+
+/* 仕切りの削除モード中の削除ボタン */
+.shelf-divider.delete-mode .delete-divider-btn {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 25px;
+    height: 25px;
+    background-color: red;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 15px;
+    padding: 0;
+    margin-bottom: 3px;
+    opacity: 0.8;
+    z-index: 100;
+}
+/* 仕切りの削除モード中の削除ボタン（ホバー時） */
+.shelf-divider.delete-mode .delete-divider-btn:hover {
+    opacity: 1;
 }
 
 
