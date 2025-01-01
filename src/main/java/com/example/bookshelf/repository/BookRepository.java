@@ -3,6 +3,7 @@ package com.example.bookshelf.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -38,6 +39,10 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     // タイトルまたは著者で検索
     @Query("SELECT b FROM Book b WHERE b.title LIKE %:keyword% OR b.author LIKE %:keyword%")
     List<Book> searchByKeyword(@Param("keyword") String keyword);
+    
+    @Modifying
+    @Query("UPDATE Book b SET b.position = :position WHERE b.id = :id")
+    void updatePosition(@Param("id") Long id, @Param("position") Integer position);
 
     // タイトル、著者、カテゴリーで複合検索
     @Query("SELECT b FROM Book b WHERE " +
@@ -49,5 +54,8 @@ public interface BookRepository extends JpaRepository<Book, Long> {
         @Param("author") String author,
         @Param("category") String category
     );
+    
+    @Query("SELECT b FROM Book b WHERE b.shelf.id = :shelfId ORDER BY b.position")
+    List<Book> findAllByShelf_IdOrderByPosition(@Param("shelfId") Long shelfId);
 }
 

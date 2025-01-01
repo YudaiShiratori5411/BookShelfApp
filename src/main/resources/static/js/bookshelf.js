@@ -1,23 +1,46 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Script loaded');
 
-    // Bootstrapのドロップダウンを初期化
-    var dropdownElementList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'))
-    var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
-        return new bootstrap.Dropdown(dropdownToggleEl)
+    // Bootstrap Dropdownの初期化
+    const dropdowns = document.querySelectorAll('[data-bs-toggle="dropdown"]');
+    dropdowns.forEach(dropdown => {
+        new bootstrap.Dropdown(dropdown);
     });
-    console.log('Dropdowns initialized:', dropdownList.length);
+
+    // デバッグ用のログ
+    console.log('Found dropdowns:', dropdowns.length);
 
     // 順番入れ替えボタンのイベントリスナー
     document.querySelectorAll('.sort-books').forEach(button => {
         console.log('Sort button found:', button);
         button.addEventListener('click', function(e) {
             e.preventDefault();
-            e.stopPropagation();  // イベントの伝播を停止
+            e.stopPropagation();
             console.log('Sort button clicked');
+            
             const bookshelf = this.closest('.bookshelf');
             const container = bookshelf.querySelector('.books-container');
             toggleSortMode(container, this);
+
+            // ドロップダウンメニューを閉じる
+            const dropdownMenu = this.closest('.dropdown-menu');
+            if (dropdownMenu) {
+                const dropdown = bootstrap.Dropdown.getInstance(dropdownMenu.previousElementSibling);
+                if (dropdown) {
+                    dropdown.hide();
+                }
+            }
+        });
+    });
+
+    // 仕切り追加ボタンのイベントリスナー
+    document.querySelectorAll('.add-divider').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const shelfId = this.getAttribute('data-shelf-id');
+            const container = document.querySelector(`.books-container[data-shelf-id="${shelfId}"]`);
+            addNewDivider(container);
 
             // ドロップダウンメニューを閉じる
             const dropdownMenu = this.closest('.dropdown-menu');
@@ -27,6 +50,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 dropdown.hide();
             }
         });
+    });
+
+    // 削除ボタンのイベントリスナー
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('delete-divider-btn')) {
+            const dividerElement = e.target.closest('.shelf-divider');
+            const dividerId = dividerElement.getAttribute('data-divider-id');
+            
+            if (confirm('この仕切りを削除してもよろしいですか？')) {
+                fetch(`/api/dividers/${dividerId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache'  // キャッシュを無効化
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to delete divider');
+                    }
+                    // 画面から要素を削除
+                    dividerElement.remove();
+                    
+                    // 削除成功時にページのキャッシュを更新
+                    window.location.reload(true);
+                })
+                .catch(error => {
+                    console.error('Error deleting divider:', error);
+                    alert('仕切りの削除に失敗しました');
+                });
+            }
+        }
     });
 });
 
@@ -44,16 +99,15 @@ function toggleSortMode(container, button) {
 }
 
 function enableDragAndDrop(container) {
-    const bookCards = container.querySelectorAll('.book-card');
-    bookCards.forEach(card => {
-        card.setAttribute('draggable', true);
-        card.addEventListener('dragstart', handleDragStart);
-        card.addEventListener('dragend', handleDragEnd);
-        card.addEventListener('dragover', handleDragOver);
-        card.addEventListener('drop', handleDrop);
+    const items = container.querySelectorAll('.book-card, .shelf-divider');
+    items.forEach(item => {
+        item.setAttribute('draggable', true);
+        item.addEventListener('dragstart', handleDragStart);
+        item.addEventListener('dragend', handleDragEnd);
+        item.addEventListener('dragover', handleDragOver);
+        item.addEventListener('drop', handleDrop);
         
-        // リンクのクリックを一時的に無効化
-        const link = card.querySelector('.book-link');
+        const link = item.querySelector('.book-link');
         if (link) {
             link.addEventListener('click', preventClick);
         }
@@ -61,16 +115,15 @@ function enableDragAndDrop(container) {
 }
 
 function disableDragAndDrop(container) {
-    const bookCards = container.querySelectorAll('.book-card');
-    bookCards.forEach(card => {
-        card.removeAttribute('draggable');
-        card.removeEventListener('dragstart', handleDragStart);
-        card.removeEventListener('dragend', handleDragEnd);
-        card.removeEventListener('dragover', handleDragOver);
-        card.removeEventListener('drop', handleDrop);
+    const items = container.querySelectorAll('.book-card, .shelf-divider');
+    items.forEach(item => {
+        item.setAttribute('draggable', false);  // falseに変更
+        item.removeEventListener('dragstart', handleDragStart);
+        item.removeEventListener('dragend', handleDragEnd);
+        item.removeEventListener('dragover', handleDragOver);
+        item.removeEventListener('drop', handleDrop);
         
-        // リンクのクリックを再度有効化
-        const link = card.querySelector('.book-link');
+        const link = item.querySelector('.book-link');
         if (link) {
             link.removeEventListener('click', preventClick);
         }
@@ -78,43 +131,85 @@ function disableDragAndDrop(container) {
 }
 
 function handleDragStart(e) {
-    const bookCard = e.target.closest('.book-card');
-    if (bookCard) {
-        bookCard.classList.add('dragging');
+    const item = e.target.closest('.book-card, .shelf-divider');
+    if (item) {
+        item.classList.add('dragging');
         e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/plain', bookCard.getAttribute('data-book-id'));
+        
+        // 元の位置を保存
+        item.setAttribute('data-original-position', item.getAttribute('data-position'));
+        
+        const itemType = item.classList.contains('book-card') ? 'book' : 'divider';
+        const itemId = itemType === 'book' ? 
+            item.getAttribute('data-book-id') : 
+            item.getAttribute('data-divider-id');
+            
+        console.log('Drag started:', {
+            type: itemType,
+            id: itemId,
+            originalPosition: item.getAttribute('data-original-position')
+        });
+
+        e.dataTransfer.setData('application/json', JSON.stringify({
+            type: itemType,
+            id: itemId,
+            originalPosition: item.getAttribute('data-original-position')
+        }));
     }
 }
 
 function handleDragOver(e) {
     e.preventDefault();
-    const draggingCard = document.querySelector('.book-card.dragging');
-    const card = e.target.closest('.book-card');
-    const container = card?.parentElement;
+    e.stopPropagation();
+
+    const draggingItem = document.querySelector('.dragging');
+    const item = e.target.closest('.book-card, .shelf-divider');
+    const container = item?.parentElement;
     
-    if (draggingCard && card && container && draggingCard !== card) {
-        const rect = card.getBoundingClientRect();
+    if (draggingItem && item && container && draggingItem !== item) {
+        const rect = item.getBoundingClientRect();
         const middle = rect.left + rect.width / 2;
         
         if (e.clientX < middle) {
-            container.insertBefore(draggingCard, card);
+            container.insertBefore(draggingItem, item);
         } else {
-            container.insertBefore(draggingCard, card.nextSibling);
+            container.insertBefore(draggingItem, item.nextSibling);
         }
+
+        // position属性を更新
+        updatePositions(container);
     }
 }
 
+// 位置情報を更新する補助関数
+function updatePositions(container) {
+    const items = Array.from(container.children);
+    items.forEach((item, index) => {
+        item.setAttribute('data-position', index.toString());
+    });
+}
+
 function handleDragEnd(e) {
-    const bookCard = e.target.closest('.book-card');
-    if (bookCard) {
-        bookCard.classList.remove('dragging');
+    e.preventDefault();
+    e.stopPropagation();  // 追加
+
+    const item = e.target.closest('.book-card, .shelf-divider');
+    if (item) {
+        item.classList.remove('dragging');
+        
         // 並び順を保存
-        const container = bookCard.closest('.books-container');
+        const container = item.closest('.books-container');
         if (container) {
+            console.log('Saving new order after drag end');
             saveNewOrder(container);
         }
     }
 }
+
+// これらのイベントリスナーをドキュメントレベルで設定
+document.addEventListener('dragstart', handleDragStart, false);
+document.addEventListener('dragover', handleDragOver, false);
+document.addEventListener('dragend', handleDragEnd, false);
 
 function handleDrop(e) {
     e.preventDefault();
@@ -125,36 +220,177 @@ function preventClick(e) {
 }
 
 function saveNewOrder(container) {
-    const bookIds = Array.from(container.querySelectorAll('.book-card'))
-        .map(card => card.getAttribute('data-book-id'));
-    const shelfId = container.getAttribute('data-shelf-id');
+    const items = Array.from(container.querySelectorAll('.book-card, .shelf-divider'));
+    const bookPositions = [];
+    const dividerPositions = [];
     
-    console.log('Sending reorder request:', {
-        shelfId: shelfId,
-        bookIds: bookIds
+    // 位置の再計算を行う
+    items.forEach((item, index) => {
+        if (item.classList.contains('shelf-divider')) {
+            dividerPositions.push({
+                id: item.getAttribute('data-divider-id'),
+                position: index
+            });
+        } else if (item.classList.contains('book-card')) {
+            bookPositions.push({
+                id: item.getAttribute('data-book-id'),
+                position: index
+            });
+        }
     });
 
-    fetch('/api/books/reorder', {
+    const shelfId = container.getAttribute('data-shelf-id');
+    
+    console.log('Attempting to save order:', {
+        shelfId: shelfId,
+        bookPositions: bookPositions,
+        dividerPositions: dividerPositions
+    });
+
+    // 保存処理を1つのトランザクションとして扱う
+    const savePositions = async () => {
+        try {
+            // 両方の位置情報を同時に送信
+            const responses = await Promise.all([
+                // 仕切りの位置を保存
+                dividerPositions.length > 0 ? 
+                    fetch('/api/dividers/reorder', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Cache-Control': 'no-cache'
+                        },
+                        body: JSON.stringify({
+                            shelfId: shelfId,
+                            dividerPositions: dividerPositions
+                        })
+                    }) : Promise.resolve(),
+                
+                // 本の位置を保存
+                bookPositions.length > 0 ?
+                    fetch('/api/reorder', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Cache-Control': 'no-cache'
+                        },
+                        body: JSON.stringify({
+                            shelfId: shelfId,
+                            bookPositions: bookPositions
+                        })
+                    }) : Promise.resolve()
+            ]);
+
+            // レスポンスの検証
+            for (const response of responses) {
+                if (response && !response.ok) {
+                    throw new Error(`Server responded with ${response.status}`);
+                }
+            }
+
+            console.log('Successfully saved all positions');
+            // 成功した場合のみリロード
+            window.location.reload();
+
+        } catch (error) {
+            console.error('Error saving positions:', error);
+            
+            // エラー発生時の復旧処理
+            try {
+                // 元の位置情報を保持
+                const originalOrder = Array.from(container.children).map(item => ({
+                    element: item,
+                    position: parseInt(item.getAttribute('data-position'))
+                }));
+
+                // 要素を元の位置に戻す
+                originalOrder.sort((a, b) => a.position - b.position);
+                originalOrder.forEach(item => container.appendChild(item.element));
+                
+                alert('並び順の保存に失敗しました。元の順序に戻します。');
+            } catch (recoveryError) {
+                console.error('Recovery failed:', recoveryError);
+                alert('並び順の保存に失敗し、復旧も失敗しました。ページをリロードしてください。');
+                window.location.reload();
+            }
+        }
+    };
+
+    // 保存処理の実行
+    savePositions();
+}
+
+function addNewDivider(container) {
+    const label = prompt('仕切りのラベルを入力してください：');
+    if (!label) return;
+
+    const shelfId = container.getAttribute('data-shelf-id');
+    const lastItem = container.querySelector('.book-card:last-child, .shelf-divider:last-child');
+    const position = lastItem ? parseInt(lastItem.getAttribute('data-position')) + 1 : 0;
+
+    fetch('/api/dividers', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
             shelfId: shelfId,
-            bookIds: bookIds
+            label: label,
+            position: position
         })
     })
-    .then(async response => {
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.error || '順序の保存に失敗しました');
-        }
-        console.log('Reorder success:', data);
-        return data;
+    .then(response => response.json())
+    .then(divider => {
+        const dividerElement = createDividerElement(divider);
+        container.appendChild(dividerElement);
     })
     .catch(error => {
-        console.error('Reorder error:', error);
-        alert('順序の保存に失敗しました：' + error.message);
+        console.error('Failed to add divider:', error);
+        alert('仕切りの追加に失敗しました');
+    });
+}
+
+function createDividerElement(divider) {
+    const element = document.createElement('div');
+    element.className = 'shelf-divider';
+    element.setAttribute('data-divider-id', divider.id);
+    element.setAttribute('data-position', divider.position);
+    element.draggable = true;
+
+    const labelElement = document.createElement('span');
+    labelElement.className = 'divider-label';
+    labelElement.textContent = divider.label;
+
+    const deleteButton = document.createElement('button');
+    deleteButton.className = 'delete-divider-btn';
+    deleteButton.innerHTML = '×';
+    deleteButton.onclick = (e) => {
+        e.stopPropagation();
+        if (confirm('この仕切りを削除してもよろしいですか？')) {
+            deleteDivider(divider.id, element);
+        }
+    };
+
+    element.appendChild(labelElement);
+    element.appendChild(deleteButton);
+
+    return element;
+}
+
+function deleteDivider(id, element) {
+    fetch(`/api/dividers/${id}`, {
+        method: 'DELETE'
+    })
+    .then(response => {
+        if (response.ok) {
+            element.remove();
+        } else {
+            throw new Error('Failed to delete divider');
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting divider:', error);
+        alert('仕切りの削除に失敗しました');
     });
 }
 

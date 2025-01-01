@@ -24,18 +24,27 @@ public class ShelfService {
 
     public void updateShelfOrder(Long id, Integer newOrder) {
         Shelf shelf = getShelfById(id);
-        shelf.setDisplayOrder(newOrder);
+        shelf.setPosition(newOrder);
         shelfRepository.save(shelf);
     }
     
+    @Transactional(readOnly = true)
     public List<Shelf> getAllShelvesWithBooks() {
-        List<Shelf> shelves = shelfRepository.findAllByOrderByDisplayOrderAsc();
+        List<Shelf> shelves = shelfRepository.findAllWithBooksAndDividersOrdered();
+        
+        // 各シェルフの本と仕切りの位置を確認
         shelves.forEach(shelf -> {
-            System.out.println("Shelf: " + shelf.getName() + ", Books count: " + shelf.getBooks().size());
-            shelf.getBooks().forEach(book -> {
-                System.out.println(" - Book: " + book.getTitle());
-            });
+            System.out.println("Shelf: " + shelf.getName());
+            System.out.println("Books:");
+            shelf.getBooks().forEach(book -> 
+                System.out.println(" - Book: " + book.getTitle() + " at position: " + book.getPosition())
+            );
+            System.out.println("Dividers:");
+            shelf.getDividers().forEach(divider -> 
+                System.out.println(" - Divider: " + divider.getLabel() + " at position: " + divider.getPosition())
+            );
         });
+        
         return shelves;
     }
 }

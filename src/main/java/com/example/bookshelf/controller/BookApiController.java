@@ -117,15 +117,15 @@ public class BookApiController {
         return ResponseEntity.ok(books);
     }
     
-    @PostMapping("/books/reorder")
+    @PostMapping("/reorder")
     public ResponseEntity<?> reorderBooks(@RequestBody ReorderBooksRequest request) {
         try {
-            bookService.reorderBooks(request.getShelfId(), request.getBookIds());
+            bookService.reorderBooks(request.getShelfId(), request.getBookPositions());
             return ResponseEntity.ok(Map.of("message", "順序を保存しました"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", e.getMessage()));
         }
     }
-
 }
+

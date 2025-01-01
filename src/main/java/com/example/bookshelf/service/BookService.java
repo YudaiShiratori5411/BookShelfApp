@@ -1,15 +1,20 @@
 package com.example.bookshelf.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.bookshelf.dto.ReorderBooksRequest;
 import com.example.bookshelf.entity.Book;
 import com.example.bookshelf.entity.Book.ReadingStatus;
+import com.example.bookshelf.entity.Divider;
 import com.example.bookshelf.entity.Shelf;
 import com.example.bookshelf.repository.BookRepository;
+import com.example.bookshelf.repository.DividerRepository;
 import com.example.bookshelf.repository.ShelfRepository;
 
 @Service
@@ -17,10 +22,14 @@ import com.example.bookshelf.repository.ShelfRepository;
 public class BookService {
     private final BookRepository bookRepository;
     private final ShelfRepository shelfRepository;
+    private final DividerRepository dividerRepository;
 
-    public BookService(BookRepository bookRepository, ShelfRepository shelfRepository) {
+    public BookService(BookRepository bookRepository, 
+                      ShelfRepository shelfRepository,
+                      DividerRepository dividerRepository) {
         this.bookRepository = bookRepository;
         this.shelfRepository = shelfRepository;
+        this.dividerRepository = dividerRepository;
     }
 
     // 本の登録
@@ -140,17 +149,37 @@ public class BookService {
     
     // 順序保存のメソッド
     @Transactional
-    public void reorderBooks(Long shelfId, List<Long> bookIds) {
-        try {
-            for (int i = 0; i < bookIds.size(); i++) {
-                Book book = bookRepository.findById(bookIds.get(i))
-                        .orElseThrow(() -> new RuntimeException("本が見つかりません"));
-                book.setDisplayOrder(i);
-                bookRepository.save(book);
-            }
-        } catch (Exception e) {
-            throw e;
-        }
+    public void reorderBooks(String shelfId, List<ReorderBooksRequest.BookPosition> positions) {
+        Long shelfIdLong = Long.parseLong(shelfId);
+        
+        // 本棚の全アイテム（本と仕切り）を取得して整理
+        List<Book> existingBooks = bookRepository.findAllByShelf_IdOrderByPosition(shelfIdLong);
+        List<Divider> existingDividers = dividerRepository.findAllByShelf_IdOrderByPositionAsc(shelfIdLong);
+        
+        // 一時的な位置を使用（競合を避けるため）
+        int offset = 10000;
+        positions.forEach(pos -> {
+            Long bookId = Long.parseLong(pos.getId());
+            bookRepository.updatePosition(bookId, offset + pos.getPosition());
+        });
+        bookRepository.flush();
+
+        // 仕切りを含めた全体の位置を再計算
+        Map<Integer, Long> desiredPositions = new HashMap<>();
+        positions.forEach(pos -> {
+            desiredPositions.put(pos.getPosition(), Long.parseLong(pos.getId()));
+        });
+
+        // 位置を最終的な値に更新
+        positions.forEach(pos -> {
+            Long bookId = Long.parseLong(pos.getId());
+            Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new IllegalArgumentException("Book not found: " + bookId));
+            
+            bookRepository.updatePosition(bookId, pos.getPosition());
+        });
+        
+        bookRepository.flush();
     }
 }
 

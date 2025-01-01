@@ -15,11 +15,14 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Entity
 @Table(name = "books")
 @Data
-public class Book {
+@EqualsAndHashCode(exclude = "shelf")
+public class Book implements Sortable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -52,9 +55,33 @@ public class Book {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
-    @Column(name = "display_order")
-    private Integer displayOrder;
+//    @Column(name = "display_order")
+//    private Integer displayOrder;
+    
+    @Column(name = "position")
+    private Integer position;
 
+    @Override
+    public Long getId() {
+        return id;
+    }
+
+    @Override
+    public Integer getPosition() {
+        return position;
+    }
+
+    @Override
+    public void setPosition(Integer position) {
+        this.position = position;
+    }
+    
+    
+    
+    
+    
+    
+    
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -85,6 +112,7 @@ public class Book {
     
     @ManyToOne
     @JoinColumn(name = "shelf_id")
+    @ToString.Exclude
     private Shelf shelf;
     
     public void setShelf(Shelf shelf) {

@@ -17,19 +17,26 @@
                     <span class="book-count" th:text="|全${shelf.books.size()}冊|">全n冊</span>
                     <!-- メニューボタン部分 -->
                     <div class="dropdown">
-                        <button type="button"
-                                class="btn btn-link dropdown-toggle"
-                                data-bs-toggle="dropdown"
+                        <button class="btn btn-link dropdown-toggle" 
+                                type="button" 
+                                th:id="'shelf-menu-' + ${shelf.id}"
+                                data-bs-toggle="dropdown" 
                                 aria-expanded="false">
                             <span class="text-white"></span>
                         </button>
-                        <!-- メニューの内容 -->
-                        <ul class="dropdown-menu">
+                        <ul class="dropdown-menu" th:attr="aria-labelledby='shelf-menu-' + ${shelf.id}">
                             <li>
                                 <button type="button"
                                         class="dropdown-item sort-books"
                                         th:data-shelf-id="${shelf.id}">
                                     順番入れ替え
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button"
+                                        class="dropdown-item add-divider"
+                                        th:data-shelf-id="${shelf.id}">
+                                    仕切りを追加
                                 </button>
                             </li>
                         </ul>
@@ -38,34 +45,46 @@
             </div>
 
             <div class="books-container" th:data-shelf-id="${shelf.id}">
-                <div th:each="book : ${shelf.books}"
-                     class="book-card"
-                     th:data-book-id="${book.id}"
-                     draggable="true">
-                    <a th:href="@{/books/{id}(id=${book.id})}" class="book-link">
-                        <div class="book-spine" th:classappend="${'status-' + #strings.toLowerCase(book.readingStatus)}">
-                            <span class="book-title" th:text="${book.title}">タイトル</span>
-                            <!-- 進捗バーを追加 -->
-                            <div class="book-progress"
-                                 th:with="current=${book.currentPage != null ? book.currentPage : 0},
-                                          total=${book.totalPages != null ? book.totalPages : 1},
-                                          progress=${total > 0 ? (current * 100.0 / total) : 0}"
-                                 th:style="'height: ' + ${progress} + '%'">
+                <div th:each="item : ${shelf.mixedItems}">
+                    <!-- 本の表示 -->
+                    <div th:if="${item instanceof T(com.example.bookshelf.entity.Book)}"
+                         class="book-card"
+                         th:data-book-id="${item.id}"
+                         th:data-position="${item.position}"
+                         draggable="false">
+                        <a th:href="@{/books/{id}(id=${item.id})}" class="book-link">
+                            <div class="book-spine" th:classappend="${'status-' + #strings.toLowerCase(item.readingStatus)}">
+                                <span class="book-title" th:text="${item.title}">タイトル</span>
+                                <!-- 進捗バーを追加 -->
+                                <div class="book-progress"
+                                     th:with="current=${item.currentPage != null ? item.currentPage : 0},
+                                             total=${item.totalPages != null ? item.totalPages : 1},
+                                             progress=${total > 0 ? (current * 100.0 / total) : 0}"
+                                     th:style="'height: ' + ${progress} + '%'">
+                                </div>
+                                <!-- ホバー時に表示される進捗情報 -->
+                                <div class="book-info-tooltip">
+                                    <span th:with="current=${item.currentPage != null ? item.currentPage : 0},
+                                                 total=${item.totalPages != null ? item.totalPages : 1}"
+                                          th:text="${current + '/' + total + 'ページ (' +
+                                          #numbers.formatDecimal(current * 100.0 / total, 1, 1) + '%)'}"
+                                    >進捗状況</span>
+                                </div>
                             </div>
-                            <!-- ホバー時に表示される進捗情報 -->
-                            <div class="book-info-tooltip">
-                                <span th:with="current=${book.currentPage != null ? book.currentPage : 0},
-                                             total=${book.totalPages != null ? book.totalPages : 1}"
-                                      th:text="${current + '/' + total + 'ページ (' +
-                                      #numbers.formatDecimal(current * 100.0 / total, 1, 1) + '%)'}"
-                                >進捗状況</span>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <!-- 順番入れ替えモード時のメッセージ -->
-                <div class="sorting-mode-message">
-                    ドラッグ＆ドロップで本の順序を変更できます。完了したら再度メニューから「順番入れ替え」をクリックしてください。
+                         </a>
+                     </div>
+            
+                    <!-- 仕切りの表示 -->
+                    <div th:if="${item instanceof T(com.example.bookshelf.entity.Divider)}"
+                         class="shelf-divider"
+                         th:data-divider-id="${item.id}"
+                         th:data-position="${item.position}"
+                         draggable="false">
+                        <span class="divider-label" th:text="${item.label}">仕切りラベル</span>
+                        <button type="button" 
+                                class="delete-divider-btn"
+                                th:data-divider-id="${item.id}">×</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -86,3 +105,55 @@
 
 
 
+
+
+
+
+
+
+
+
+
+<!--<div class="books-container" th:data-shelf-id="${shelf.id}">-->
+<!--     本の表示 -->
+<!--    <div th:each="item : ${shelf.mixedItems}"-->
+<!--         th:if="${item instanceof T(com.example.bookshelf.entity.Book)}"-->
+<!--         class="book-card"-->
+<!--         th:data-book-id="${item.id}"-->
+<!--         th:data-position="${item.displayOrder}"-->
+<!--         draggable="true">-->
+<!--        <a th:href="@{/books/{id}(id=${item.id})}" class="book-link">-->
+<!--            <div class="book-spine" th:classappend="${'status-' + #strings.toLowerCase(item.readingStatus)}">-->
+<!--                <span class="book-title" th:text="${item.title}">タイトル</span>-->
+<!--                 進捗バーを追加 -->
+<!--                <div class="book-progress"-->
+<!--                     th:with="current=${item.currentPage != null ? item.currentPage : 0},-->
+<!--                             total=${item.totalPages != null ? item.totalPages : 1},-->
+<!--                             progress=${total > 0 ? (current * 100.0 / total) : 0}"-->
+<!--                     th:style="'height: ' + ${progress} + '%'">-->
+<!--                </div>-->
+<!--                 ホバー時に表示される進捗情報 -->
+<!--                <div class="book-info-tooltip">-->
+<!--                    <span th:with="current=${item.currentPage != null ? item.currentPage : 0},-->
+<!--                                 total=${item.totalPages != null ? item.totalPages : 1}"-->
+<!--                          th:text="${current + '/' + total + 'ページ (' +-->
+<!--                          #numbers.formatDecimal(current * 100.0 / total, 1, 1) + '%)'}"-->
+<!--                    >進捗状況</span>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </a>-->
+<!--    </div>-->
+
+<!--     仕切りの表示 -->
+<!--    <div th:each="item : ${shelf.mixedItems}"-->
+<!--         th:if="${item instanceof T(com.example.bookshelf.entity.Divider)}"-->
+<!--         class="shelf-divider"-->
+<!--         th:data-divider-id="${item.id}"-->
+<!--         th:data-position="${item.position}"-->
+<!--         draggable="true">-->
+<!--        <span class="divider-label" th:text="${item.label}">仕切りラベル</span>-->
+<!--        <button type="button" -->
+<!--                class="delete-divider-btn"-->
+<!--                th:data-divider-id="${item.id}">×</button>-->
+<!--    </div>-->
+<!--</div>-->

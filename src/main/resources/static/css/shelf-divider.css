@@ -1,0 +1,50 @@
+.shelf-divider {
+    background: #000000;
+    padding: 8px 12px;
+    min-height: 180px;
+    max-height: 180px;
+    display: inline-block;
+    border-radius: 2px;
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    vertical-align: top;
+}
+
+.divider-label {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-size: 0.9em;
+    color: #ffffff;
+    height: 100%;
+    max-height: 160px;
+    overflow: hidden;
+    display: inline-block;
+}
+
+.delete-divider-btn {
+    position: absolute;
+    bottom: 1px;  /* topをbottomに変更 */
+    right: 10px;
+    background: none;
+    border: none;
+    color: #ffffff;  /* ✕の色も白に変更 */
+    cursor: pointer;
+/*    padding: 2px 6px;*/
+    font-size: 1.2em;
+    transition: color 0.2s;
+}
+
+.delete-divider-btn:hover {
+    color: #ff4444;  /* ホバー時の色はそのまま */
+}
+
+.shelf-divider.dragging {
+    opacity: 0.6;
+    cursor: move;
+}
+
+
+
+
+
+

@@ -5,12 +5,12 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class ReorderBooksRequest {
+public class ReorderDividersRequest {
     private String shelfId;
-    private List<BookPosition> bookPositions;
+    private List<DividerPosition> dividerPositions;
 
     @Data
-    public static class BookPosition {
+    public static class DividerPosition {
         private String id;
         private Integer position;
     }
