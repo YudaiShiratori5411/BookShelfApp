@@ -27,10 +27,21 @@ public class DividerService {
         Shelf shelf = shelfRepository.findById(shelfId)
                 .orElseThrow(() -> new IllegalArgumentException("Shelf not found: " + shelfId));
 
+        // 現在の本棚内の全てのアイテムを取得して最大のposition値を見つける
+        Integer maxBookPosition = bookRepository.findMaxPositionByShelfId(shelfId);
+        if (maxBookPosition == null) maxBookPosition = -1;
+        
+        Integer maxDividerPosition = dividerRepository.findMaxPositionByShelfId(shelfId);
+        if (maxDividerPosition == null) maxDividerPosition = -1;
+
+        // 最大のposition値を使用
+        Integer maxPosition = Math.max(maxBookPosition, maxDividerPosition);
+        
+        // 新しい仕切りを作成
         Divider divider = new Divider();
         divider.setShelf(shelf);
         divider.setLabel(label);
-        divider.setPosition(position);
+        divider.setPosition(maxPosition + 1);  // 最大値の次の値を使用
 
         return dividerRepository.save(divider);
     }

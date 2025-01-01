@@ -57,5 +57,8 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     
     @Query("SELECT b FROM Book b WHERE b.shelf.id = :shelfId ORDER BY b.position")
     List<Book> findAllByShelf_IdOrderByPosition(@Param("shelfId") Long shelfId);
+    
+    @Query("SELECT MAX(b.position) FROM Book b WHERE b.shelf.id = :shelfId")
+    Integer findMaxPositionByShelfId(@Param("shelfId") Long shelfId);
 }
 

@@ -290,7 +290,7 @@ function saveNewOrder(container) {
 
             console.log('Successfully saved all positions');
             // 成功した場合のみリロード
-            window.location.reload();
+//            window.location.reload();
 
         } catch (error) {
             console.error('Error saving positions:', error);
