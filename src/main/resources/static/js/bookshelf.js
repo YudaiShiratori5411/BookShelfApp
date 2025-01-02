@@ -100,6 +100,74 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    
+        // 新しい段追加ボタンのイベントリスナー
+    let currentShelfId = null;
+    const addShelfModal = new bootstrap.Modal(document.getElementById('addShelfModal'));
+    
+    document.querySelectorAll('.add-shelf').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // クリックされた段のIDを保存
+            currentShelfId = this.getAttribute('data-shelf-id');
+            
+            // モーダルを表示
+            addShelfModal.show();
+            
+            // ドロップダウンメニューを閉じる
+            const dropdownMenu = this.closest('.dropdown-menu');
+            const dropdownToggle = document.querySelector(`[aria-controls="${dropdownMenu.id}"]`);
+            const dropdown = bootstrap.Dropdown.getInstance(dropdownToggle);
+            if (dropdown) {
+                dropdown.hide();
+            }
+        });
+    });
+
+    // 保存ボタンのイベントリスナー
+    document.getElementById('saveShelf').addEventListener('click', function() {
+        const nameInput = document.getElementById('shelfName');
+        const name = nameInput.value.trim();
+        
+        if (!name) {
+            alert('段の名前を入力してください。');
+            return;
+        }
+
+        fetch('/api/shelves', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: name,
+                referenceShelfId: currentShelfId  // 現在の段の後に追加するための位置情報
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('段の追加に失敗しました');
+            }
+            return response.json();
+        })
+        .then(data => {
+            addShelfModal.hide();
+            nameInput.value = '';  // フォームをクリア
+            window.location.reload();  // 成功したらページをリロード
+        })
+        .catch(error => {
+            alert('段の追加に失敗しました。もう一度お試しください。');
+            console.error('Error:', error);
+        });
+    });
+
+    // モーダルが閉じられたときにフォームをリセット
+    document.getElementById('addShelfModal').addEventListener('hidden.bs.modal', function () {
+        document.getElementById('shelfName').value = '';
+        currentShelfId = null;
+    });
 });
 
 function toggleSortMode(container, button) {
@@ -112,6 +180,7 @@ function toggleSortMode(container, button) {
         button.textContent = '順番入れ替え';
         disableDragAndDrop(container);
         saveNewOrder(container);
+        // '順番入れ替えを完了'クリック時に自動リロード
         window.location.reload();
     }
 }

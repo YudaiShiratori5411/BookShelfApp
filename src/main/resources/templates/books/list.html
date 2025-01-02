@@ -46,6 +46,13 @@
                                     仕切りを削除する
                                 </button>
                             </li>
+                            <li>
+                                <button type="button"
+                                        class="dropdown-item add-shelf"
+                                        th:data-shelf-id="${shelf.id}">
+                                    ここに新しい段を追加
+                                </button>
+                            </li>
                         </ul>
                         
                         <!-- 仕切りのHTML-->
@@ -113,6 +120,29 @@
         <a th:href="@{/books/new}" class="btn btn-primary add-book-btn">
             新しい本を登録
         </a>
+        
+        <div class="modal fade" id="addShelfModal" tabindex="-1" aria-labelledby="addShelfModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addShelfModalLabel">新しい段を追加</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addShelfForm">
+                            <div class="mb-3">
+                                <label for="shelfName" class="form-label">段の名前</label>
+                                <input type="text" class="form-control" id="shelfName" required>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                        <button type="button" class="btn btn-primary" id="saveShelf">追加</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <th:block layout:fragment="scripts">

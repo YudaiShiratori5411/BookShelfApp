@@ -16,6 +16,10 @@ public class ShelfService {
     public ShelfService(ShelfRepository shelfRepository) {
         this.shelfRepository = shelfRepository;
     }
+    
+    public List<Shelf> getAllShelves() {
+        return shelfRepository.findAllOrderByPosition();
+    }
 
     public Shelf getShelfById(Long id) {
         return shelfRepository.findById(id)
@@ -46,5 +50,42 @@ public class ShelfService {
         });
         
         return shelves;
+    }
+    
+    @Transactional
+    public Shelf createShelf(String name, String referenceShelfId) {
+        // 新しい段の位置を決定
+        Integer newPosition = calculateNewPosition(referenceShelfId);
+        
+        // 必要に応じて既存の段の位置を更新
+        if (referenceShelfId != null) {
+            shiftShelfPositions(newPosition);
+        }
+
+        // 新しい段を作成
+        Shelf newShelf = new Shelf();
+        newShelf.setName(name);
+        newShelf.setPosition(newPosition);
+        
+        return shelfRepository.save(newShelf);
+    }
+    
+    private Integer calculateNewPosition(String referenceShelfId) {
+        if (referenceShelfId == null) {
+            // 参照する段が指定されていない場合は最後に追加
+            Integer maxPosition = shelfRepository.findMaxShelfPosition();
+            return maxPosition != null ? maxPosition + 1 : 0;
+        }
+
+        // 参照する段の後ろに追加
+        Shelf referenceShelf = shelfRepository.findById(Long.parseLong(referenceShelfId))
+            .orElseThrow(() -> new IllegalArgumentException("Reference shelf not found: " + referenceShelfId));
+            
+        return referenceShelf.getPosition() + 1;
+    }
+
+    private void shiftShelfPositions(Integer fromPosition) {
+        // updatePositionsのメソッド名を新しいものに変更
+        shelfRepository.updateShelfPositions(fromPosition);
     }
 }

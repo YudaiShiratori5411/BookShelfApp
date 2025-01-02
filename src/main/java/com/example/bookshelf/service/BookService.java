@@ -33,6 +33,18 @@ public class BookService {
     }
 
     // 本の登録
+//    @Transactional
+//    public Book saveBook(Book book) {
+//        // カテゴリーに基づいて適切な本棚を検索
+//        Shelf shelf = shelfRepository.findByName(book.getCategory())
+//                .orElseThrow(() -> new RuntimeException("該当する本棚が見つかりません: " + book.getCategory()));
+//        
+//        // 本棚を設定
+//        book.setShelf(shelf);
+//        
+//        return bookRepository.save(book);
+//    }
+    
     @Transactional
     public Book saveBook(Book book) {
         // カテゴリーに基づいて適切な本棚を検索
@@ -41,6 +53,10 @@ public class BookService {
         
         // 本棚を設定
         book.setShelf(shelf);
+        
+        // その本棚の最大position値を取得し、新しい本のpositionを設定
+        Integer maxPosition = bookRepository.findMaxPositionByShelfId(shelf.getId());
+        book.setPosition(maxPosition != null ? maxPosition + 1 : 0);
         
         return bookRepository.save(book);
     }

@@ -718,7 +718,9 @@ main {
 
 
 
-
+.form-select {
+  padding: .375rem 2.25rem .375rem .60rem !important;
+}
 
 
 

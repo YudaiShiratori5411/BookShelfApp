@@ -2,6 +2,7 @@ package com.example.bookshelf.controller;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -37,11 +38,19 @@ public class BookViewController {
         return "books/list";
     }
 
-   @GetMapping("/new")
-   public String newBookForm(Model model) {
-       model.addAttribute("book", new Book());
-       return "books/form";
-   }
+    @GetMapping("/new")
+    public String newBookForm(Model model) {
+        // 本の新規インスタンスを作成
+        model.addAttribute("book", new Book());
+        
+        // 全ての本棚（カテゴリー）を取得して追加
+        List<Shelf> shelves = shelfService.getAllShelves();
+        model.addAttribute("categories", shelves.stream()
+            .map(Shelf::getName)
+            .collect(Collectors.toList()));
+            
+        return "books/form";
+    }
    
    @PostMapping
    public String createBook(@ModelAttribute Book book, RedirectAttributes redirectAttributes) {
@@ -125,7 +134,6 @@ public class BookViewController {
        model.addAttribute("books", searchResults);
        return "books/list";
    }
-   
 }
 
 
