@@ -32,7 +32,11 @@ public interface ShelfRepository extends JpaRepository<Shelf, Long> {
     @Query("UPDATE Shelf s SET s.position = s.position + 1 WHERE s.position >= :fromPosition")
     void updateShelfPositions(@Param("fromPosition") Integer fromPosition);
     
-    // position順でソートされた全ての本棚を取得するメソッドを追加
+    // position順でソートされた全ての本棚を取得するメソッド
     @Query("SELECT s FROM Shelf s ORDER BY s.position ASC")
     List<Shelf> findAllOrderByPosition();
+    
+    @Modifying
+    @Query("UPDATE Shelf s SET s.position = s.position - 1 WHERE s.position > :position")
+    void decrementPositionsAfter(@Param("position") Integer position);
 }

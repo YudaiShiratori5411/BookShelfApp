@@ -70,6 +70,26 @@ public class ShelfService {
         return shelfRepository.save(newShelf);
     }
     
+    @Transactional
+    public void deleteShelf(Long id) {
+        Shelf shelf = shelfRepository.findByIdWithBooksAndDividers(id)
+            .orElseThrow(() -> new RuntimeException("段が見つかりません: " + id));
+        
+        // この段にある本と仕切りの存在確認
+        if (!shelf.getBooks().isEmpty()) {
+            throw new RuntimeException("この段には本が登録されているため削除できません");
+        }
+        
+        // 仕切りの削除
+        shelf.getDividers().clear();
+        
+        // 段の削除
+        shelfRepository.delete(shelf);
+        
+        // 後続の段のposition調整
+        shelfRepository.decrementPositionsAfter(shelf.getPosition());
+    }
+    
     private Integer calculateNewPosition(String referenceShelfId) {
         if (referenceShelfId == null) {
             // 参照する段が指定されていない場合は最後に追加

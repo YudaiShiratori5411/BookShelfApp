@@ -125,6 +125,46 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    
+    // 段の削除機能
+    document.querySelectorAll('.delete-shelf').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const shelfId = this.getAttribute('data-shelf-id');
+            const shelfName = this.closest('.bookshelf').querySelector('.shelf-name').textContent.trim();
+            
+            if (confirm(`"${shelfName}"を削除してもよろしいですか？\n※本が登録されている段は削除できません`)) {
+                fetch(`/api/shelves/${shelfId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.error || '段の削除に失敗しました');
+                        });
+                    }
+                    window.location.reload();
+                })
+                .catch(error => {
+                    alert(error.message);
+                });
+            }
+            
+            // ドロップダウンメニューを閉じる
+            const dropdownMenu = this.closest('.dropdown-menu');
+            if (dropdownMenu) {
+                const dropdown = bootstrap.Dropdown.getInstance(dropdownMenu.previousElementSibling);
+                if (dropdown) {
+                    dropdown.hide();
+                }
+            }
+        });
+    });
 
     // 保存ボタンのイベントリスナー
     document.getElementById('saveShelf').addEventListener('click', function() {

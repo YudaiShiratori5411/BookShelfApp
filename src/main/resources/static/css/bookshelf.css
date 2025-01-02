@@ -39,7 +39,6 @@ main {
     align-items: center;
     color: white;
     padding: 0 1rem;
-/*    gap: 10px;*/
     width: 100%;
     background: rgba(0, 0, 0, 0.2);
 }
@@ -73,21 +72,6 @@ main {
     gap: 10px;
 }
 
-/*.shelf-title .btn-link:hover {*/
-/*    background-color: rgba(255, 255, 255, 0.1);*/
-/*}*/
-
-/*.shelf-title .btn-link:hover {*/
-/*    color: rgba(255, 255, 255, 0.8);*/
-/*}*/
-
-/*.shelf-title {*/
-/*    color: white;*/
-/*    padding: 10px 20px;*/
-/*    font-size: 1.2em;*/
-/*    background: rgba(0, 0, 0, 0.2);*/
-/*}*/
-
 .books-container {
     display: flex;
     overflow-x: auto;
@@ -97,7 +81,7 @@ main {
 }
 
 .books-container::-webkit-scrollbar {
-    display: none;  /* Chromeのスクロールバーを非表示 */
+    display: none;
 }
 
 .book-link {
@@ -109,21 +93,12 @@ main {
 
 .book-count {
     color: #fff;
-/*    margin-left: auto;*/
     white-space: nowrap;
-/*    margin-right: 8px;*/
     font-size: 0.9em;
 }
 .dropdown {
     margin-left: 8px;
 }
-
-/*.book-count {*/
-/*    font-size: 0.9em;*/
-/*    color: #666;*/
-/*    margin-left: 8px;*/
-/*}*/
-
 
 
 /* 本棚の木目効果 */
@@ -193,13 +168,11 @@ main {
 
 /* 本のスタイル */
 .book-title {
-/*    max-height: 140px;*/
     overflow: hidden;
     text-overflow: ellipsis;
 }
 .book-card {
     display: inline-block;
-/*    margin: 0 2px;*/
     min-width: 30px;
     height: 180px;
     flex-shrink: 0;
@@ -208,9 +181,7 @@ main {
     transition: transform 0.2s ease-in-out;
     cursor: grab;
 }
-/*.books-container.sorting-mode .book-card {*/
-/*    transition: transform 0.2s ease-in-out;*/
-/*}*/
+
 /* ドラッグ&ドロップ関連のスタイル */
 .books-container.sorting-mode {
     background: rgba(255, 255, 255, 0.1);
@@ -245,19 +216,9 @@ main {
     visibility: visible;
 }
 
-/*.book-card.dragging {*/
-/*    opacity: 0.7;*/
-/*    border: 2px dashed #666;*/
-/*    background: transparent;*/
-/*    cursor: grabbing !important;*/
-/*    transform: scale(1.05) !important;*/
-/*}*/
 /* ドラッグ中の要素のスタイル */
 .book-card.dragging {
-/*    opacity: 0.8;*/
     border: 2px dashed #666;
-/*    transform: scale(1.05);*/
-/*    cursor: grabbing;*/
     z-index: 1000;
 }
 /* ドラッグ時のスタイル */
@@ -285,10 +246,8 @@ main {
     width: 100%;
     display: flex;
     align-items: center;
-/*    justify-content: center;*/
     position: relative;
     writing-mode: vertical-rl;
-/*    text-orientation: mixed;*/
     padding: 5px 2px;
     font-size: 0.8em;
     overflow: hidden;
@@ -305,26 +264,13 @@ main {
 .book-detail-actions {
     margin-top: 20px;
     display: flex;
-    gap: 10px;  /* ボタン間の間隔 */
+    gap: 10px;
     align-items: center;
 }
 
 .book-detail-actions .btn {
-    min-width: 100px;  /* ボタンの最小幅を統一 */
+    min-width: 100px;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -374,14 +320,6 @@ main {
 
 
 
-
-
-
-
-
-
-
-
 .books-container.sorting .book-card {
     cursor: move;
 }
@@ -389,40 +327,21 @@ main {
 
 
 
-
-
-
 .mt-4 {
     display: flex;
-    gap: 10px;  /* ボタン間の間隔 */
-    justify-content: flex-start;  /* 左寄せ */
+    gap: 10px;
+    justify-content: flex-start;
     align-items: center;
 }
 
 .mt-4 .btn {
-    min-width: 100px;  /* ボタンの最小幅を統一 */
+    min-width: 100px;
 }
 
 /* 読書進捗管理ボタンの特別なスタイル */
 .btn-info {
-    color: #fff;  /* テキストを白に */
+    color: #fff;
 }
-
-
-
-
-
-
-
-/*.shelf-menu-btn {*/
-/*    background: none;*/
-/*    border: none;*/
-/*    color: white;*/
-/*    padding: 0.25rem 0.5rem;*/
-/*    display: flex;*/
-/*    align-items: center;*/
-/*    justify-content: center;*/
-/*}*/
 
 .shelf-menu {
     margin-left: auto;
@@ -454,27 +373,9 @@ main {
     line-height: 1;
 }
 
-/*.shelf-menu-btn:hover {*/
-/*    color: rgba(255, 255, 255, 0.8) !important;*/
-/*}*/
-
 .shelf-menu-icon {
     font-size: 1.5em;
 }
-
-/* 本棚メニュー関連のスタイル */
-/*.shelf-title {*/
-/*    display: flex;*/
-/*    justify-content: space-between;*/
-/*    align-items: center;*/
-/*}*/
-
-/*.shelf-menu-btn {*/
-/*    color: white;*/
-/*    padding: 0 10px;*/
-/*    background: none;*/
-/*    border: none;*/
-/*}*/
 
 /* ドラッグ&ドロップ時のスタイル */
 .books-container.sorting {
@@ -495,11 +396,6 @@ main {
 .dropdown {
     margin-left: auto;
 }
-
-/*.dropdown-menu {*/
-/*    min-width: 100px;*/
-/*    padding: 0.5rem 0;*/
-/*}*/
 
 .dropdown-menu {
     position: absolute;
@@ -540,6 +436,7 @@ main {
     box-shadow: none !important;
     outline: none !important;
     border: none !important;
+    z-index: 10000;
 }
 
 /* ドロップダウンメニューの項目の枠線を消す */
@@ -550,25 +447,7 @@ main {
     border: none !important;
 }
 
-/*.dropdown-menu {*/
-/*    min-width: 120px;*/
-/*    background: #fff;*/
-/*    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);*/
-/*}*/
 
-/*.dropdown-item {*/
-/*    padding: 0.5rem 1rem;*/
-/*    cursor: pointer;*/
-/*}*/
-
-/*.dropdown-menu {*/
-/*    min-width: auto;*/
-/*    padding: 0.5rem 0;*/
-/*}*/
-
-/*.dropdown-item {*/
-/*    padding: 0.5rem 1rem;*/
-/*}*/
 
 
 
@@ -592,14 +471,6 @@ main {
     transform: scale(1);
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
 }
-
-/* ドラッグ中のスタイル */
-/*.book-card.dragging {*/
-/*    cursor: grabbing !important;*/
-/*    opacity: 0.7;*/
-/*    transform: scale(1.05) !important;*/
-/*}*/
-
 
 /* 順番入れ替えモード時のメニューボタンのスタイル */
 .sorting-active .shelf-menu-btn {
@@ -717,7 +588,7 @@ main {
 
 
 
-
+/* 本の登録ページの「カテゴリーを選択」がうまく表示されない */
 .form-select {
   padding: .375rem 2.25rem .375rem .60rem !important;
 }

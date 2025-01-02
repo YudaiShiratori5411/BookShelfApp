@@ -1,6 +1,11 @@
 package com.example.bookshelf.controller;
 
+import java.util.Map;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,5 +31,16 @@ public class ShelfController {
             request.getReferenceShelfId()
         );
         return ResponseEntity.ok(newShelf);
+    }
+    
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteShelf(@PathVariable Long id) {
+        try {
+            shelfService.deleteShelf(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", e.getMessage()));
+        }
     }
 }
