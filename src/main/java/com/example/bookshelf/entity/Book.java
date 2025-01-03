@@ -84,6 +84,9 @@ public class Book implements Sortable {
     
     @PrePersist
     protected void onCreate() {
+        if (currentPage == null) {
+            currentPage = 0;
+        }
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
     }

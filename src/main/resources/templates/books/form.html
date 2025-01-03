@@ -48,10 +48,11 @@
                             </div>
                             <div class="col-md-4">
                                 <label for="currentPage" class="form-label">現在のページ</label>
-                                <input type="number" class="form-control" id="currentPage" th:field="*{currentPage}" min="0">
+                                <input type="number" class="form-control" id="currentPage" th:field="*{currentPage}" min="0" required th:value="0">
+                                <div class="invalid-feedback">現在のページを入力してください</div>
                             </div>
                             <div class="col-md-2">
-                                <label for="readingStatus" class="form-label">読書状態</label>
+                                <label for="readingStatus" class="form-label">読書状態 <span class="text-danger">*</span></label>
                                 <select class="form-select" id="readingStatus" th:field="*{readingStatus}">
                                     <option value="NOT_STARTED">未読</option>
                                     <option value="READING">読書中</option>
