@@ -597,3 +597,82 @@ main {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.bookshelf-page .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background-color: #343a40;
+    width: 100%;
+    height: 60px;
+}
+
+.bookshelf-page body {
+    padding-top: 4rem;
+}
+
+.bookshelf-page .bookshelf-top-page {
+    padding-top: 60px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* 共通のnavbarスタイルはそのまま保持 */
+.navbar .container-fluid {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1rem;
+}
+
+.navbar-brand {
+    color: white;
+    text-decoration: none;
+    font-size: 1.25rem;
+    margin-right: 1rem;
+}
+
+.navbar-nav {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.nav-link {
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    margin: 0 0.25rem;
+}
+
+.nav-link:hover {
+    color: white;
+}
+

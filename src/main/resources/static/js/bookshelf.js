@@ -251,6 +251,14 @@ function enableDragAndDrop(container) {
     const items = container.querySelectorAll('.book-card, .shelf-divider');
     items.forEach(item => {
         item.setAttribute('draggable', true);
+        item.classList.add('sortable');  // sortableクラスを追加
+        
+        // イベントリスナーを追加する前に一旦削除して重複を防ぐ
+        item.removeEventListener('dragstart', handleDragStart);
+        item.removeEventListener('dragend', handleDragEnd);
+        item.removeEventListener('dragover', handleDragOver);
+        item.removeEventListener('drop', handleDrop);
+        
         item.addEventListener('dragstart', handleDragStart);
         item.addEventListener('dragend', handleDragEnd);
         item.addEventListener('dragover', handleDragOver);
@@ -266,7 +274,9 @@ function enableDragAndDrop(container) {
 function disableDragAndDrop(container) {
     const items = container.querySelectorAll('.book-card, .shelf-divider');
     items.forEach(item => {
-        item.setAttribute('draggable', false);  // falseに変更
+        item.setAttribute('draggable', false);
+        item.classList.remove('sortable');  // sortableクラスを削除
+        
         item.removeEventListener('dragstart', handleDragStart);
         item.removeEventListener('dragend', handleDragEnd);
         item.removeEventListener('dragover', handleDragOver);
@@ -280,6 +290,12 @@ function disableDragAndDrop(container) {
 }
 
 function handleDragStart(e) {
+    // ドラッグ元の要素がsortableクラスを持っていない場合は処理を中止
+    if (!e.target.closest('.sortable')) {
+        e.preventDefault();
+        return;
+    }
+
     const item = e.target.closest('.book-card, .shelf-divider');
     if (item) {
         item.classList.add('dragging');
@@ -292,12 +308,6 @@ function handleDragStart(e) {
         const itemId = itemType === 'book' ? 
             item.getAttribute('data-book-id') : 
             item.getAttribute('data-divider-id');
-            
-        console.log('Drag started:', {
-            type: itemType,
-            id: itemId,
-            originalPosition: item.getAttribute('data-original-position')
-        });
 
         e.dataTransfer.setData('application/json', JSON.stringify({
             type: itemType,
@@ -313,6 +323,12 @@ function handleDragOver(e) {
 
     const draggingItem = document.querySelector('.dragging');
     const item = e.target.closest('.book-card, .shelf-divider');
+    
+    // ドラッグ先の要素がsortableクラスを持っていない場合は処理を中止
+    if (!item?.classList.contains('sortable')) {
+        return;
+    }
+
     const container = item?.parentElement;
     
     if (draggingItem && item && container && draggingItem !== item) {
