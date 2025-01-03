@@ -12,7 +12,7 @@
         <div class="detail-content">
             <div id="form-card" class="card d-flex justify-content-center">
                 <div class="card-body">
-                    <form th:action="@{/books}" th:object="${book}" method="post" class="needs-validation" novalidate>
+                    <form th:action="@{/books}" th:object="${book}" method="post">
                         <!-- タイトル、著者、カテゴリー -->
                         <div class="row mb-3 d-flex justify-content-center">
                             <div class="col-md-4">
@@ -48,7 +48,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label for="currentPage" class="form-label">現在のページ</label>
-                                <input type="number" class="form-control" id="currentPage" th:field="*{currentPage}" min="0" required th:value="0">
+                                <input type="number" class="form-control" id="currentPage" th:field="*{currentPage}" min="0" th:value="0">
                                 <div class="invalid-feedback">現在のページを入力してください</div>
                             </div>
                             <div class="col-md-2">
@@ -84,22 +84,7 @@
         </div>
     </div>
 
-    <!-- フォームバリデーションのためのJavaScript -->
-    <script>
-        (function() {
-            'use strict'
-            var forms = document.querySelectorAll('.needs-validation')
-            Array.prototype.slice.call(forms).forEach(function(form) {
-                form.addEventListener('submit', function(event) {
-                    if (!form.checkValidity()) {
-                        event.preventDefault()
-                        event.stopPropagation()
-                    }
-                    form.classList.add('was-validated')
-                }, false)
-            })
-        })()
-    </script>
+    <script th:src="@{/js/form-validation.js}"></script>
 </body>
 </html>
 
