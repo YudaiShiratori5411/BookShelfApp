@@ -619,7 +619,8 @@ main {
 
 
 
-
+/*list.htmlのみに以下のCSSを適用*/
+/*navタグを固定*/
 .bookshelf-page .navbar {
     position: fixed;
     top: 0;

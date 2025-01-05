@@ -1,0 +1,106 @@
+/* 検索バーのコンテナ */
+.search-container {
+    max-width: 500px;
+    width: 100%;
+}
+
+/* 検索入力フィールド */
+#searchInput {
+    border-radius: 20px 0 0 20px;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    transition: all 0.3s ease;
+}
+
+#searchInput::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+#searchInput:focus {
+    background-color: white;
+    color: black;
+    box-shadow: none;
+}
+
+#searchInput:focus::placeholder {
+    color: rgba(0, 0, 0, 0.5);
+}
+
+/* 検索ボタン */
+#searchButton {
+    border-radius: 0 20px 20px 0;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+#searchButton:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 検索結果カード */
+.search-result-card {
+    transform: translateY(20px);
+    opacity: 0;
+    width: calc(33.333% - 1rem);
+    margin-bottom: 1rem;
+    animation: slideIn 0.3s ease forwards;
+}
+
+.search-result-card .card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.search-result-card .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.search-result-card .card-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+}
+
+.search-result-card .book-info {
+    font-size: 0.9rem;
+}
+
+.search-result-card .progress {
+    background-color: #e9ecef;
+}
+
+.search-result-card .progress-bar {
+    background-color: #2c3e50;
+}
+
+.search-result-card .book-spine {
+    height: 200px;
+    transition: transform 0.3s ease;
+}
+
+.search-result-card:hover .book-spine {
+    transform: scale(1.05);
+}
+
+/* 検索結果表示の際の無駄なスペースを排除 */
+.no-margin-top {
+    margin-top: 0;
+}
+
+/* 検索結果全体のグリッドレイアウト */
+#searchResults {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+/* アニメーション */
+@keyframes slideIn {
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+

@@ -14,7 +14,7 @@ import com.example.bookshelf.repository.ShelfRepository;
 
 import lombok.RequiredArgsConstructor;
 
-@Service
+@Service("shelfDividerService")
 @RequiredArgsConstructor
 public class DividerService {
 
@@ -98,4 +98,5 @@ public class DividerService {
         
         dividerRepository.flush();
     }
+    
 }

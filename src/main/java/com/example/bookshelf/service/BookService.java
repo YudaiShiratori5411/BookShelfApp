@@ -1,9 +1,11 @@
 package com.example.bookshelf.service;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,19 +33,6 @@ public class BookService {
         this.shelfRepository = shelfRepository;
         this.dividerRepository = dividerRepository;
     }
-
-    // 本の登録
-//    @Transactional
-//    public Book saveBook(Book book) {
-//        // カテゴリーに基づいて適切な本棚を検索
-//        Shelf shelf = shelfRepository.findByName(book.getCategory())
-//                .orElseThrow(() -> new RuntimeException("該当する本棚が見つかりません: " + book.getCategory()));
-//        
-//        // 本棚を設定
-//        book.setShelf(shelf);
-//        
-//        return bookRepository.save(book);
-//    }
     
     @Transactional
     public Book saveBook(Book book) {
@@ -152,6 +141,28 @@ public class BookService {
             author.isEmpty() ? null : author,
             category.isEmpty() ? null : category
         );
+    }
+    
+    @Transactional(readOnly = true)
+    public List<Book> searchBooks(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+        
+        String searchQuery = query.toLowerCase();
+        try {
+            return bookRepository.findAll().stream()
+                .filter(book -> 
+                    (book.getTitle() != null && book.getTitle().toLowerCase().contains(searchQuery)) ||
+                    (book.getAuthor() != null && book.getAuthor().toLowerCase().contains(searchQuery)))
+                .collect(Collectors.collectingAndThen(
+                    Collectors.toList(),
+                    Collections::unmodifiableList
+                ));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
     }
     
     // ReadingStatusの更新メソッドを追加

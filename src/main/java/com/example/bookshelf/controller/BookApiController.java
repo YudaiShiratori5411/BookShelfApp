@@ -1,10 +1,17 @@
 package com.example.bookshelf.controller;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.bookshelf.dto.ReorderBooksRequest;
@@ -24,6 +32,7 @@ import com.example.bookshelf.service.BookService;
 @RequestMapping("/api")
 @CrossOrigin(origins = "http://localhost:8080")
 public class BookApiController {
+	private static final Logger logger = LoggerFactory.getLogger(BookApiController.class);
     private final BookService bookService;
 
     public BookApiController(BookService bookService) {
@@ -125,6 +134,43 @@ public class BookApiController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", e.getMessage()));
+        }
+    }
+    
+    @GetMapping("/search")
+    @Transactional(readOnly = true)
+    public ResponseEntity<List<Book>> searchBooks(@RequestParam(required = false) String query) {
+        try {
+            if (query == null || query.trim().isEmpty()) {
+                return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(Collections.emptyList());
+            }
+
+            List<Book> results = bookService.searchBooks(query.trim());
+            
+            // 循環参照を防ぐために必要なデータのみを返す
+            List<Map<String, Object>> simplifiedResults = results.stream()
+                .map(book -> {
+                    Map<String, Object> simplifiedBook = new HashMap<>();
+                    simplifiedBook.put("id", book.getId());
+                    simplifiedBook.put("title", book.getTitle());
+                    simplifiedBook.put("author", book.getAuthor());
+                    simplifiedBook.put("totalPages", book.getTotalPages());
+                    simplifiedBook.put("currentPage", book.getCurrentPage());
+                    simplifiedBook.put("readingStatus", book.getReadingStatus());
+                    return simplifiedBook;
+                })
+                .collect(Collectors.toList());
+
+            return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(results);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Collections.emptyList());
         }
     }
 }
