@@ -63,6 +63,7 @@ public class BookService {
         book.setCurrentPage(bookDetails.getCurrentPage());
         book.setMemo(bookDetails.getMemo());
         book.setReadingStatus(bookDetails.getReadingStatus());
+        book.setCoverImage(bookDetails.getCoverImage());
         
         return bookRepository.save(book);
     }

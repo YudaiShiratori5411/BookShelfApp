@@ -12,7 +12,7 @@
         <div class="detail-content">
             <div id="form-card" class="card d-flex justify-content-center">
                 <div class="card-body">
-                    <form th:action="@{/books}" th:object="${book}" method="post">
+                    <form th:action="@{/books}" th:object="${book}" method="post" enctype="multipart/form-data">
                         <!-- タイトル、著者、カテゴリー -->
                         <div class="row mb-3 d-flex justify-content-center">
                             <div class="col-md-4">
@@ -61,6 +61,22 @@
                                 </select>
                             </div>
                         </div>
+                        
+                        <!-- 表紙画像アップロード -->
+                        <div class="row mb-3 d-flex justify-content-center">
+                            <div class="col-md-10">
+                                <label for="coverImage" class="form-label">表紙画像</label>
+                                <div class="input-group">
+                                    <input type="file" class="form-control" id="coverImage" accept="image/*">
+                                    <button class="btn btn-outline-secondary" type="button" id="clearImage">クリア</button>
+                                </div>
+                                <div id="imagePreview" class="mt-2 text-center" style="display:none;">
+                                    <img id="preview" class="img-thumbnail" style="max-height: 200px;">
+                                </div>
+                                <!-- Base64データを保存するための隠しフィールド -->
+                                <input type="hidden" th:field="*{coverImage}" id="coverImageBase64">
+                            </div>
+                        </div>
     
                         <!-- メモ -->
                         <div id="register-memo">
@@ -84,6 +100,7 @@
         </div>
     </div>
 
+    <script th:src="@{/js/image-upload.js}"></script>
     <script th:src="@{/js/form-validation.js}"></script>
 </body>
 </html>

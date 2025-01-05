@@ -12,7 +12,7 @@
         <div class="detail-content">
             <div class="container">
     
-                <form th:action="@{/books/{id}/update(id=${book.id})}" th:object="${book}" method="post">
+                <form th:action="@{/books/{id}/update(id=${book.id})}" th:object="${book}" method="post" enctype="multipart/form-data">
                     <input type="hidden" th:field="*{id}" />
     
                     <!-- タイトルと著者 -->
@@ -62,6 +62,25 @@
                             </select>
                         </div>
                     </div>
+                    
+                    <!-- 表紙画像アップロード -->
+                    <div class="row mb-3 d-flex justify-content-center">
+                        <div class="col-md-12">
+                            <label for="coverImage" class="form-label">表紙画像</label>
+                            <div class="input-group">
+                                <input type="file" class="form-control" id="coverImage" accept="image/*">
+                                <button class="btn btn-outline-secondary" type="button" id="clearImage">クリア</button>
+                            </div>
+                            <!-- 既存の画像がある場合の表示 -->
+                            <div th:if="${book.coverImage}" class="mt-2">
+                                <small class="text-muted">現在の画像が設定されています</small>
+                            </div>
+                            <div id="imagePreview" class="mt-2 text-center" style="display:none;">
+                                <img id="preview" class="img-thumbnail" style="max-height: 200px;">
+                            </div>
+                            <input type="hidden" th:field="*{coverImage}" id="coverImageBase64">
+                        </div>
+                    </div>
     
                     <!-- メモ -->
                     <div class="mb-4">
@@ -78,6 +97,8 @@
             </div>
         </div>
     </div>
+    
+    <script th:src="@{/js/image-upload.js}"></script>
 </body>
 </html>
 

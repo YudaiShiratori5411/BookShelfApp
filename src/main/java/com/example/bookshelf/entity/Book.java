@@ -58,9 +58,6 @@ public class Book implements Sortable {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
-//    @Column(name = "display_order")
-//    private Integer displayOrder;
-    
     @Column(name = "position")
     private Integer position;
 
@@ -78,12 +75,6 @@ public class Book implements Sortable {
     public void setPosition(Integer position) {
         this.position = position;
     }
-    
-    
-    
-    
-    
-    
     
     @PrePersist
     protected void onCreate() {
@@ -123,6 +114,20 @@ public class Book implements Sortable {
     
     public void setShelf(Shelf shelf) {
         this.shelf = shelf;
+    }
+    
+    
+    
+    @Column(columnDefinition = "LONGTEXT")
+    private String coverImage;  // Base64エンコードされた画像データ
+
+    // getter/setter
+    public String getCoverImage() {
+        return coverImage;
+    }
+
+    public void setCoverImage(String coverImage) {
+        this.coverImage = coverImage;
     }
 }
 

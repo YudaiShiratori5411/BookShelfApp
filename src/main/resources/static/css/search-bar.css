@@ -115,7 +115,7 @@
 
 
 .search-container .input-group .btn-outline-light {
-    /* 既存の設定を維持しつつ、左の境界線を追加 */
+    /* 左の境界線を追加 */
     border-left: 1px solid rgba(255, 255, 255, 0.3);  /* 半透明の白色の境界線 */
     border-radius: 0 20px 20px 0;  /* 右側のみ丸める */
     background-color: rgba(255, 255, 255, 0.1);  /* わずかに明るい背景 */

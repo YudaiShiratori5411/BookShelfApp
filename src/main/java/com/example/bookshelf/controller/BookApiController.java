@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +30,6 @@ import com.example.bookshelf.service.BookService;
 @RequestMapping("/api")
 @CrossOrigin(origins = "http://localhost:8080")
 public class BookApiController {
-	private static final Logger logger = LoggerFactory.getLogger(BookApiController.class);
     private final BookService bookService;
 
     public BookApiController(BookService bookService) {

@@ -1,6 +1,5 @@
 package com.example.bookshelf.controller;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -85,10 +84,21 @@ public class BookViewController {
        try {
            Book book = bookService.getBookById(id)
                    .orElseThrow(() -> new RuntimeException("本が見つかりません: " + id));
+           
+           // 本の情報をモデルに追加
            model.addAttribute("book", book);
+           
+           // 読書状態の選択肢を追加
            model.addAttribute("readingStatuses", Book.ReadingStatus.values());
-           model.addAttribute("categories", Arrays.asList("技術書", "小説", "ビジネス", "その他"));
+           
+           // カテゴリーリストを動的に取得
+           List<Shelf> shelves = shelfService.getAllShelves();
+           model.addAttribute("categories", shelves.stream()
+               .map(Shelf::getName)
+               .collect(Collectors.toList()));
+           
            return "books/edit";
+           
        } catch (Exception e) {
            model.addAttribute("error", "編集画面の表示に失敗しました");
            return "redirect:/books";

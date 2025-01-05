@@ -554,3 +554,120 @@ function deleteDivider(id, element) {
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Script loaded');  // スクリプトが読み込まれたことを確認
+    
+    const popup = document.getElementById('coverImagePopup');
+    console.log('Popup element:', popup);  // ポップアップ要素が見つかるか確認
+    
+    const books = document.querySelectorAll('.book-card');
+    console.log('Found books:', books.length);  // 本の要素が見つかるか確認
+    
+    books.forEach(book => {
+        console.log('Book data:', {
+            id: book.dataset.bookId,
+            coverImage: book.dataset.coverImage
+        });  // 各本のデータを確認
+        
+        book.addEventListener('mouseenter', function(e) {
+            const coverImage = this.dataset.coverImage;
+            console.log('Hover - Cover image:', coverImage);  // ホバー時の画像データを確認
+            
+            if (coverImage) {
+                popup.querySelector('#popupImage').src = coverImage;
+                popup.classList.remove('no-image');
+            } else {
+                popup.querySelector('#popupImage').src = '/images/default-cover.svg';
+                popup.classList.remove('no-image');
+            }
+            
+            const rect = this.getBoundingClientRect();
+            popup.style.left = `${rect.right + 10}px`;
+            popup.style.top = `${rect.top}px`;
+            popup.style.display = 'block';
+        });
+    });
+});
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    const popup = document.getElementById('coverImagePopup');
+    const popupImage = document.getElementById('popupImage');
+    let activeBook = null;
+
+    function showPopup(book) {
+        const coverImage = book.dataset.coverImage;
+        if (!popup || !popupImage) return;
+
+        if (coverImage && coverImage !== 'null' && coverImage !== 'undefined') {
+            popupImage.src = coverImage;
+        } else {
+            popupImage.src = '/images/default-book-cover.svg';
+        }
+
+        const rect = book.getBoundingClientRect();
+        popup.style.left = `${rect.right + 20}px`;
+        popup.style.top = `${rect.top}px`;
+        popup.style.display = 'block';
+        popup.classList.add('show');
+        activeBook = book;
+    }
+
+    function hidePopup() {
+        if (!popup) return;
+        popup.classList.remove('show');
+        activeBook = null;
+
+        // アニメーション完了後に非表示
+        const onTransitionEnd = () => {
+            if (!activeBook) {
+                popup.style.display = 'none';
+            }
+            popup.removeEventListener('transitionend', onTransitionEnd);
+        };
+        popup.addEventListener('transitionend', onTransitionEnd);
+    }
+
+    // 本のカードとその子要素のイベントを管理
+    document.querySelectorAll('.book-card').forEach(book => {
+        const handleEnter = () => {
+            if (activeBook !== book) {
+                showPopup(book);
+            }
+        };
+
+        const handleLeave = (e) => {
+            // 関連する要素にマウスが移動した場合は無視
+            const relatedTarget = e.relatedTarget;
+            if (relatedTarget && (book.contains(relatedTarget) || popup.contains(relatedTarget))) {
+                return;
+            }
+            hidePopup();
+        };
+
+        // 本のカード全体にイベントを設定
+        book.addEventListener('mouseenter', handleEnter);
+        book.addEventListener('mouseleave', handleLeave);
+    });
+
+    // ポップアップ自体のイベントを管理
+    popup.addEventListener('mouseleave', (e) => {
+        // 本のカードにマウスが移動した場合は無視
+        const relatedTarget = e.relatedTarget;
+        if (relatedTarget && activeBook && activeBook.contains(relatedTarget)) {
+            return;
+        }
+        hidePopup();
+    });
+});

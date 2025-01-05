@@ -7,6 +7,9 @@
 </head>
 <body class="bookshelf-page">
     <div layout:fragment="content" class="bookshelf-top-page">
+        <div id="coverImagePopup" class="cover-image-popup">
+            <img id="popupImage" th:src="@{/images/default-book-cover.svg}" alt="表紙画像">
+        </div>
         <!-- 各本棚（カテゴリー） -->
         <div th:each="shelf : ${shelves}" class="bookshelf">
             <div class="shelf-title">
@@ -85,6 +88,7 @@
                          class="book-card"
                          th:data-book-id="${item.id}"
                          th:data-position="${item.position}"
+                         th:data-cover-image="${item.coverImage}"
                          draggable="false">
                         <a th:href="@{/books/{id}(id=${item.id})}" class="book-link">
                             <div class="book-spine" th:classappend="${'status-' + #strings.toLowerCase(item.readingStatus)}">
@@ -155,6 +159,7 @@
     <th:block layout:fragment="scripts">
         <script th:src="@{/js/bookshelf.js}"></script>
     </th:block>
+</div>
 </body>
 </html>
 
