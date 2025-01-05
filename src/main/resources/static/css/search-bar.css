@@ -38,6 +38,11 @@
     background-color: rgba(255, 255, 255, 0.2);
 }
 
+/* 検索バーを中央に移動 */
+.custom-mx-auto {
+    margin-left: auto;
+}
+
 /* 検索結果カード */
 .search-result-card {
     transform: translateY(20px);
