@@ -4,38 +4,44 @@
     width: 100%;
 }
 
+/* 検索ボタンのアイコンとテキストの間隔 */
+.fas.fa-search {
+    margin-right: 0.35em;
+}
+
 /* 検索入力フィールド */
 #searchInput {
     border-radius: 20px 0 0 20px;
-    border: none;
     background-color: rgba(255, 255, 255, 0.1);
     color: white;
     transition: all 0.3s ease;
 }
 
-#searchInput::placeholder {
-    color: rgba(255, 255, 255, 0.7);
-}
-
-#searchInput:focus {
-    background-color: white;
-    color: black;
-    box-shadow: none;
-}
-
-#searchInput:focus::placeholder {
-    color: rgba(0, 0, 0, 0.5);
+/* ホバー時のエフェクト */
+#searchInput:hover {
+  border-color: white;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 75);
 }
 
 /* 検索ボタン */
 #searchButton {
     border-radius: 0 20px 20px 0;
-    border: none;
+    color: #ffffff;
+    background-color: transparent;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    padding: 8px 20px;
 }
 
+/* ホバー時のエフェクト */
 #searchButton:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 75);
+}
+
+#searchButton:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(255, 255, 255, 0.1);
 }
 
 /* 検索バーを中央に移動 */

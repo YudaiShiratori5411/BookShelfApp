@@ -148,19 +148,11 @@ main {
   width: 1040px;
 }
 
-/* 登録ページ */
 #mandatory-items {
-  margin-left: 8%;
-}
-.register-cencel-button {
-  margin-left: 27%;
+  min-width: 120px;
 }
 
-/* 編集ページ */
-#mandatory-items-edit {
-    min-width: 120px;
-}
-.register-cancel-button-edit {
+.register-cancel-button {
     margin: 0 auto;
     position: relative;
     right: 60px;

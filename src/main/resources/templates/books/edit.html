@@ -82,42 +82,43 @@
 
                             <!-- ボタン -->
                             <div class="d-flex justify-content-between align-items-center mt-4">
-                                <small id="mandatory-items-edit" class="text-muted">
+                                <small id="mandatory-items" class="text-muted">
                                     <span class="text-danger">*</span> 必須項目
                                 </small>
-                                <div class="flex-grow-1 d-flex justify-content-center register-cancel-button-edit">
-                                    <button type="submit" class="btn btn-primary">登録</button>
+                                <div class="flex-grow-1 d-flex justify-content-center register-cancel-button">
+                                    <button type="submit" class="btn btn-primary">更新</button>
                                     <a th:href="@{/books}" class="btn btn-secondary ms-2">キャンセル</a>
                                 </div>
                                 <!-- 左右対称にするためのダミー要素 -->
                                 <small class="invisible">dummy</small>
                             </div>
-<!--                            <div class="row">-->
-<!--                                <div class="col-12">-->
-<!--                                    <button type="submit" class="btn btn-primary">更新</button>-->
-<!--                                    <a th:href="@{/books}" class="btn btn-secondary ms-2">キャンセル</a>-->
-<!--                                </div>-->
-<!--                            </div>-->
                         </div>
 
                         <!-- サイドバー（表紙画像） -->
                         <div class="col-md-3">
                             <div class="card">
                                 <div class="card-body">
-<!--                                    <label for="coverImage" class="form-label">表紙画像</label>-->
+                                    <label for="coverImage" class="form-label">表紙画像</label>
                                     
-                                    <!-- 現在の画像表示エリア -->
-                                    <div id="currentImageDisplay" th:if="${book.coverImage}" class="text-center mb-2">
-                                        <small class="text-muted d-block mb-2">現在の表紙画像</small>
-                                        <img th:src="${book.coverImage}" class="img-thumbnail" alt="表紙画像" style="max-height: 300px;">
+                                    <!-- 現在の画像表示エリア（デフォルト画像を含む） -->
+                                    <div id="currentImageDisplay" class="text-center mb-2">
+                                        <img th:if="${book.coverImage}" 
+                                             th:src="${book.coverImage}" 
+                                             class="img-thumbnail" 
+                                             alt="表紙画像"
+                                             style="max-height: 300px;">
+                                        <img th:unless="${book.coverImage}"
+                                             th:src="@{/images/default-book-cover.svg}"
+                                             class="img-thumbnail"
+                                             alt="デフォルト表紙画像"
+                                             style="max-height: 300px;">
                                     </div>
-                        
+                                    
                                     <!-- プレビュー表示エリア -->
-                                    <div id="imagePreview" class="text-center mb-2" style="display: none;">
-                                        <small class="text-muted d-block mb-2">プレビュー</small>
+                                    <div id="imagePreview" class="text-center mb-2" style="display:none;">
                                         <img id="preview" class="img-thumbnail" alt="プレビュー" style="max-height: 300px;">
                                     </div>
-                        
+                                    
                                     <input type="hidden" th:field="*{coverImage}" id="coverImageBase64">
                                 </div>
                             </div>

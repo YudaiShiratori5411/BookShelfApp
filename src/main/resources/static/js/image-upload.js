@@ -6,11 +6,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const coverImageBase64 = document.getElementById('coverImageBase64');
     const currentImageDisplay = document.getElementById('currentImageDisplay');
 
-    // 既存の画像がある場合の処理
-    if (coverImageBase64.value) {
-        currentImageDisplay.style.display = 'block';
-    }
-
     // ファイル選択時の処理
     coverImageInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
@@ -20,10 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // プレビュー表示
                 preview.src = e.target.result;
                 imagePreview.style.display = 'block';
-                // 現在の画像を非表示
-                if (currentImageDisplay) {
-                    currentImageDisplay.style.display = 'none';
-                }
+                currentImageDisplay.style.display = 'none';
                 // hidden inputに画像データを設定
                 coverImageBase64.value = e.target.result;
             };
@@ -40,9 +32,12 @@ document.addEventListener('DOMContentLoaded', function() {
         preview.src = '';
         // hidden inputをクリア
         coverImageBase64.value = '';
-        // 現在の画像表示を制御
-        if (currentImageDisplay) {
-            currentImageDisplay.style.display = 'none';
+        // 現在の画像表示を元に戻す（デフォルト画像を表示）
+        currentImageDisplay.style.display = 'block';
+        // デフォルト画像のパスを取得して設定
+        const defaultImage = currentImageDisplay.querySelector('img');
+        if (defaultImage && !coverImageBase64.value) {
+            defaultImage.src = '/images/default-book-cover.svg';
         }
     });
 });

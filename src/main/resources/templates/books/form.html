@@ -10,92 +10,121 @@
 <body>
     <div layout:fragment="content">
         <div class="detail-content">
-            <div id="form-card" class="card d-flex justify-content-center">
-                <div class="card-body">
-                    <form th:action="@{/books}" th:object="${book}" method="post" enctype="multipart/form-data">
-                        <!-- タイトル、著者、カテゴリー -->
-                        <div class="row mb-3 d-flex justify-content-center">
-                            <div class="col-md-4">
-                                <label for="title" class="form-label">
-                                    タイトル <span class="text-danger">*</span> (最大 23 文字)
-                                </label>
-                                <input type="text" class="form-control" id="title" th:field="*{title}" required>
-                                <div class="invalid-feedback">タイトルを入力してください</div>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="author" class="form-label">著者 <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="author" th:field="*{author}" required>
-                                <div class="invalid-feedback">著者名を入力してください</div>
-                            </div>
-                            <div class="col-md-2">
-                                <label for="category" class="form-label">カテゴリー <span class="text-danger">*</span></label>
-                                <select class="form-select" id="category" th:field="*{category}" required>
-                                    <option value="">カテゴリーを選択</option>
-                                    <option th:each="category : ${categories}"
-                                            th:value="${category}"
-                                            th:text="${category}">カテゴリー名</option>
-                                </select>
-                                <div class="invalid-feedback">カテゴリーを選択してください</div>
-                            </div>
-                        </div>
-    
-                        <!-- 読書状態、総ページ数、現在のページ -->
-                        <div class="row mb-3 d-flex justify-content-center">
-                            <div class="col-md-4">
-                                <label for="totalPages" class="form-label">総ページ数 <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="totalPages" th:field="*{totalPages}" required min="1">
-                                <div class="invalid-feedback">有効なページ数を入力してください</div>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="currentPage" class="form-label">現在のページ</label>
-                                <input type="number" class="form-control" id="currentPage" th:field="*{currentPage}" min="0" th:value="0">
-                                <div class="invalid-feedback">現在のページを入力してください</div>
-                            </div>
-                            <div class="col-md-2">
-                                <label for="readingStatus" class="form-label">読書状態 <span class="text-danger">*</span></label>
-                                <select class="form-select" id="readingStatus" th:field="*{readingStatus}">
-                                    <option value="NOT_STARTED">未読</option>
-                                    <option value="READING">読書中</option>
-                                    <option value="COMPLETED">完読</option>
-                                    <option value="ON_HOLD">中断</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <!-- 表紙画像アップロード -->
-                        <div class="row mb-3 d-flex justify-content-center">
-                            <div class="col-md-10">
-                                <label for="coverImage" class="form-label">表紙画像</label>
-                                <div class="input-group">
-                                    <input type="file" class="form-control" id="coverImage" accept="image/*">
-                                    <button class="btn btn-outline-secondary" type="button" id="clearImage">クリア</button>
+            <div class="container py-3">
+                <form th:action="@{/books}" th:object="${book}" method="post" enctype="multipart/form-data" class="book-edit-form">
+                    <div class="row">
+                        <!-- メインコンテンツエリア -->
+                        <div class="col-md-9">
+                            <!-- 第一行 -->
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="title" class="form-label">タイトル <span class="text-danger">*</span> (最大 23 文字)</label>
+                                    <input type="text" class="form-control" id="title" th:field="*{title}" required>
+                                    <div class="invalid-feedback">タイトルを入力してください</div>
                                 </div>
-                                <div id="imagePreview" class="mt-2 text-center" style="display:none;">
-                                    <img id="preview" class="img-thumbnail" style="max-height: 200px;">
+                                <div class="col-md-4">
+                                    <label for="author" class="form-label">著者 <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="author" th:field="*{author}" required>
+                                    <div class="invalid-feedback">著者名を入力してください</div>
                                 </div>
-                                <!-- Base64データを保存するための隠しフィールド -->
-                                <input type="hidden" th:field="*{coverImage}" id="coverImageBase64">
+                                <div class="col-md-4">
+                                    <label for="category" class="form-label">カテゴリー <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="category" th:field="*{category}" required>
+                                        <option value="">カテゴリーを選択</option>
+                                        <option th:each="category : ${categories}"
+                                                th:value="${category}"
+                                                th:text="${category}">カテゴリー名</option>
+                                    </select>
+                                    <div class="invalid-feedback">カテゴリーを選択してください</div>
+                                </div>
+                            </div>
+
+                            <!-- 第二行 -->
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="totalPages" class="form-label">総ページ数 <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="totalPages" th:field="*{totalPages}" required min="1">
+                                    <div class="invalid-feedback">有効なページ数を入力してください</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="currentPage" class="form-label">現在のページ</label>
+                                    <input type="number" class="form-control" id="currentPage" th:field="*{currentPage}" min="0" value="0">
+                                    <div class="invalid-feedback">現在のページを入力してください</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="readingStatus" class="form-label">読書状態 <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="readingStatus" th:field="*{readingStatus}" required>
+                                        <option value="NOT_STARTED">未読</option>
+                                        <option value="READING">読書中</option>
+                                        <option value="COMPLETED">完読</option>
+                                        <option value="ON_HOLD">中断</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- 第三行（ファイル選択） -->
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <label for="coverImage" class="form-label">表紙画像</label>
+                                    <div class="input-group">
+                                        <input type="file" class="form-control" id="coverImage" accept="image/*">
+                                        <button class="btn btn-outline-secondary" type="button" id="clearImage">クリア</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 第四行（メモ欄） -->
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <label for="memo" class="form-label">メモ</label>
+                                    <textarea class="form-control" id="memo" th:field="*{memo}" rows="3"></textarea>
+                                </div>
+                            </div>
+
+                            <!-- ボタン部分 -->
+                            <div class="d-flex justify-content-between align-items-center mt-4">
+                                <small id="mandatory-items" class="text-muted">
+                                    <span class="text-danger">*</span> 必須項目
+                                </small>
+                                <div class="flex-grow-1 d-flex justify-content-center register-cancel-button">
+                                    <button type="submit" class="btn btn-primary">登録</button>
+                                    <a th:href="@{/books}" class="btn btn-secondary ms-2">キャンセル</a>
+                                </div>
+                                <small class="invisible">dummy</small>
                             </div>
                         </div>
-    
-                        <!-- メモ -->
-                        <div id="register-memo">
-                            <div class="mb-3">
-                                <label for="memo" class="form-label">メモ</label>
-                                <textarea class="form-control" id="memo" th:field="*{memo}" rows="3"></textarea>
+
+                        <!-- サイドバー（表紙画像） -->
+                        <div class="col-md-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <label for="coverImage" class="form-label">表紙画像</label>
+                                    
+                                    <!-- 現在の画像表示エリア（デフォルト画像を含む） -->
+                                    <div id="currentImageDisplay" class="text-center mb-2">
+                                        <img th:if="${book.coverImage}" 
+                                             th:src="${book.coverImage}" 
+                                             class="img-thumbnail" 
+                                             alt="表紙画像"
+                                             style="max-height: 300px;">
+                                        <img th:unless="${book.coverImage}"
+                                             th:src="@{/images/default-book-cover.svg}"
+                                             class="img-thumbnail"
+                                             alt="デフォルト表紙画像"
+                                             style="max-height: 300px;">
+                                    </div>
+                                    
+                                    <!-- プレビュー表示エリア -->
+                                    <div id="imagePreview" class="text-center mb-2" style="display:none;">
+                                        <img id="preview" class="img-thumbnail" alt="プレビュー" style="max-height: 300px;">
+                                    </div>
+                                    
+                                    <input type="hidden" th:field="*{coverImage}" id="coverImageBase64">
+                                </div>
                             </div>
                         </div>
-    
-                        <!-- ボタン -->
-                        <div class="d-flex">
-                            <small id="mandatory-items" class="text-muted"><span class="text-danger">*</span> 必須項目</small>
-                            <div class="register-cencel-button">
-                                <button type="submit" class="btn btn-primary">登録</button>
-                                <a th:href="@{/books}" class="btn btn-secondary ms-2">キャンセル</a>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
