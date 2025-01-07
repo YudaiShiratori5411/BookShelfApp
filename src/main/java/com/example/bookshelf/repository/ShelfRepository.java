@@ -40,3 +40,4 @@ public interface ShelfRepository extends JpaRepository<Shelf, Long> {
     @Query("UPDATE Shelf s SET s.position = s.position - 1 WHERE s.position > :position")
     void decrementPositionsAfter(@Param("position") Integer position);
 }
+

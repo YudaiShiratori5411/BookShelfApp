@@ -4,8 +4,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,19 +26,32 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.example.bookshelf.dto.ReorderBooksRequest;
 import com.example.bookshelf.entity.Book;
 import com.example.bookshelf.entity.Book.ReadingStatus;
 import com.example.bookshelf.service.BookService;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "http://localhost:8080")
 public class BookApiController {
+    
+    @Value("${rakuten.application-id}")
+    private String applicationId;
+
+    @Value("${rakuten.books.api-url}")
+    private String apiUrl;
+    
+    private final RestTemplate restTemplate;
     private final BookService bookService;
 
-    public BookApiController(BookService bookService) {
+    public BookApiController(RestTemplate restTemplate, BookService bookService) {
+        this.restTemplate = restTemplate;
         this.bookService = bookService;
     }
 
@@ -146,7 +165,6 @@ public class BookApiController {
 
             List<Book> results = bookService.searchBooks(query.trim());
             
-            // 循環参照を防ぐために必要なデータのみを返す
             List<Map<String, Object>> simplifiedResults = results.stream()
                 .map(book -> {
                     Map<String, Object> simplifiedBook = new HashMap<>();
@@ -168,6 +186,82 @@ public class BookApiController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(Collections.emptyList());
+        }
+    }
+    
+    @GetMapping("/books/rakuten")
+    public ResponseEntity<?> getRakutenBookInfo(@RequestParam String isbn) {
+        try {
+            String url = UriComponentsBuilder.fromHttpUrl(apiUrl)
+                .queryParam("format", "json")
+                .queryParam("isbn", isbn)
+                .queryParam("applicationId", applicationId)
+                .build()
+                .toUriString();
+
+            System.out.println("Requesting Rakuten API URL: " + url);
+            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+            System.out.println("Rakuten API Response: " + response.getBody());
+
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(response.getBody());
+
+            if (root.has("Items") && root.get("Items").size() > 0) {
+                JsonNode item = root.get("Items").get(0).get("Item");
+                
+                Map<String, Object> bookInfo = new HashMap<>();
+                bookInfo.put("success", true);
+                bookInfo.put("title", item.get("title").asText());
+                bookInfo.put("author", item.get("author").asText());
+                bookInfo.put("pageCount", extractPageCount(item.get("size").asText()));
+                bookInfo.put("coverUrl", item.get("largeImageUrl").asText());
+
+                return ResponseEntity.ok(bookInfo);
+            }
+
+            return ResponseEntity.ok(Map.of("success", false));
+
+        } catch (Exception e) {
+            System.err.println("Rakuten API Error: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
+    private String extractPageCount(String size) {
+        if (size == null || size.isEmpty()) {
+            return "不明";
+        }
+        Pattern pattern = Pattern.compile("(\\d+)p");
+        Matcher matcher = pattern.matcher(size);
+        return matcher.find() ? matcher.group(1) : "不明";
+    }
+
+    @GetMapping("/books/google")
+    public ResponseEntity<?> getGoogleBookInfo(@RequestParam String isbn) {
+        try {
+            // ISBNのフォーマットを調整（ハイフンを削除）
+            String cleanIsbn = isbn.replaceAll("-", "");
+            String url = String.format("https://www.googleapis.com/books/v1/volumes?q=isbn:%s&country=JP", cleanIsbn);
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.set(HttpHeaders.USER_AGENT, "Mozilla/5.0");
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+            
+            ResponseEntity<String> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                entity,
+                String.class
+            );
+            
+            return ResponseEntity.ok(response.getBody());
+        } catch (Exception e) {
+            System.err.println("Google Books API Error: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", e.getMessage()));
         }
     }
 }

@@ -35,7 +35,7 @@ public class Book implements Sortable {
 
     @Column(nullable = false)
     private String author;
-
+    
     @Column(name = "total_pages")
     private Integer totalPages;
 
@@ -115,8 +115,6 @@ public class Book implements Sortable {
     public void setShelf(Shelf shelf) {
         this.shelf = shelf;
     }
-    
-    
     
     @Column(columnDefinition = "LONGTEXT")
     private String coverImage;  // Base64エンコードされた画像データ
