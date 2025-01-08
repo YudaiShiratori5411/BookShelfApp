@@ -81,16 +81,26 @@ public class DividerService {
     @Transactional
     public void reorderDividers(String shelfId, List<ReorderDividersRequest.DividerPosition> positions) {
         Long shelfIdLong = Long.parseLong(shelfId);
+        Shelf shelf = shelfRepository.findById(shelfIdLong)
+            .orElseThrow(() -> new IllegalArgumentException("Shelf not found: " + shelfId));
         
-        // 一時的な位置を使用（競合を避けるため）
+        // 一時的な位置を使用
         int offset = 10000;
         positions.forEach(pos -> {
             Long dividerId = Long.parseLong(pos.getId());
-            dividerRepository.updatePosition(dividerId, offset + pos.getPosition());
+            Divider divider = dividerRepository.findById(dividerId)
+                .orElseThrow(() -> new IllegalArgumentException("Divider not found: " + dividerId));
+            
+            // 本棚が変更された場合は更新
+            if (!divider.getShelf().getId().equals(shelfIdLong)) {
+                divider.setShelf(shelf);
+            }
+            divider.setPosition(offset + pos.getPosition());
+            dividerRepository.save(divider);
         });
         dividerRepository.flush();
 
-        // 位置を最終的な値に更新
+        // 最終的な位置に更新
         positions.forEach(pos -> {
             Long dividerId = Long.parseLong(pos.getId());
             dividerRepository.updatePosition(dividerId, pos.getPosition());
@@ -98,5 +108,5 @@ public class DividerService {
         
         dividerRepository.flush();
     }
-    
 }
+

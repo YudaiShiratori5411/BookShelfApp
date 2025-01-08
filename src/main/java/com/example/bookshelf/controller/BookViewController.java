@@ -134,6 +134,7 @@ public class BookViewController {
             model.addAttribute("categories", shelves.stream()
                 .map(Shelf::getName)
                 .collect(Collectors.toList()));
+            model.addAttribute("currentPage", "edit");
             
             return "books/edit";
         } catch (Exception e) {

@@ -1,9 +1,7 @@
 package com.example.bookshelf.service;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -13,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.bookshelf.dto.ReorderBooksRequest;
 import com.example.bookshelf.entity.Book;
 import com.example.bookshelf.entity.Book.ReadingStatus;
-import com.example.bookshelf.entity.Divider;
 import com.example.bookshelf.entity.Shelf;
 import com.example.bookshelf.repository.BookRepository;
 import com.example.bookshelf.repository.DividerRepository;
@@ -179,31 +176,28 @@ public class BookService {
     @Transactional
     public void reorderBooks(String shelfId, List<ReorderBooksRequest.BookPosition> positions) {
         Long shelfIdLong = Long.parseLong(shelfId);
-        
-        // 本棚の全アイテム（本と仕切り）を取得して整理
-        List<Book> existingBooks = bookRepository.findAllByShelf_IdOrderByPosition(shelfIdLong);
-        List<Divider> existingDividers = dividerRepository.findAllByShelf_IdOrderByPositionAsc(shelfIdLong);
-        
+        Shelf shelf = shelfRepository.findById(shelfIdLong)
+            .orElseThrow(() -> new IllegalArgumentException("Shelf not found: " + shelfId));
+
         // 一時的な位置を使用（競合を避けるため）
         int offset = 10000;
-        positions.forEach(pos -> {
-            Long bookId = Long.parseLong(pos.getId());
-            bookRepository.updatePosition(bookId, offset + pos.getPosition());
-        });
-        bookRepository.flush();
-
-        // 仕切りを含めた全体の位置を再計算
-        Map<Integer, Long> desiredPositions = new HashMap<>();
-        positions.forEach(pos -> {
-            desiredPositions.put(pos.getPosition(), Long.parseLong(pos.getId()));
-        });
-
-        // 位置を最終的な値に更新
         positions.forEach(pos -> {
             Long bookId = Long.parseLong(pos.getId());
             Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new IllegalArgumentException("Book not found: " + bookId));
             
+            // 本棚が変更された場合は更新
+            if (!book.getShelf().getId().equals(shelfIdLong)) {
+                book.setShelf(shelf);
+            }
+            book.setPosition(offset + pos.getPosition());
+            bookRepository.save(book);
+        });
+        bookRepository.flush();
+
+        // 最終的な位置に更新
+        positions.forEach(pos -> {
+            Long bookId = Long.parseLong(pos.getId());
             bookRepository.updatePosition(bookId, pos.getPosition());
         });
         
