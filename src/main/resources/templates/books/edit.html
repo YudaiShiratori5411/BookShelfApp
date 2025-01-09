@@ -5,13 +5,26 @@
 <head>
     <meta charset="UTF-8">
     <title>本の編集</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <!-- カスタムCSS -->
     <link rel="stylesheet" th:href="@{/css/bookshelf.css}">
+    <!-- ZXing -->
+    <script src="https://unpkg.com/@zxing/library@latest"></script>
 </head>
 <body>
     <div layout:fragment="content">
         <div class="detail-content">
             <div class="container py-3">
-                <form th:action="@{/books/{id}/update(id=${book.id})}" th:object="${book}" method="post" enctype="multipart/form-data" class="book-edit-form">
+                <form th:action="@{/books/{id}/update(id=${book.id})}" 
+                      th:object="${book}" 
+                      method="post" 
+                      enctype="multipart/form-data" 
+                      class="book-edit-form">
+                    
+                    <!-- IDを隠しフィールドとして追加 -->
                     <input type="hidden" th:field="*{id}" />
                     
                     <div class="row">
@@ -21,21 +34,38 @@
                             <div class="row mb-3">
                                 <div class="col-md-4">
                                     <label for="title" class="form-label">タイトル <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="title" th:field="*{title}" required />
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="title" 
+                                           th:field="*{title}" 
+                                           required
+                                           th:errorclass="is-invalid" />
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
                                 </div>
                                 <div class="col-md-4">
                                     <label for="author" class="form-label">著者 <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="author" th:field="*{author}" required />
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="author" 
+                                           th:field="*{author}" 
+                                           required
+                                           th:errorclass="is-invalid" />
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('author')}" th:errors="*{author}"></div>
                                 </div>
                                 <div class="col-md-4">
                                     <label for="category" class="form-label">カテゴリー <span class="text-danger">*</span></label>
-                                    <select class="form-select" id="category" th:field="*{category}" required>
+                                    <select class="form-select" 
+                                            id="category" 
+                                            th:field="*{category}" 
+                                            required
+                                            th:errorclass="is-invalid">
                                         <option value="">カテゴリーを選択</option>
                                         <option th:each="cat : ${categories}"
                                                 th:value="${cat}"
                                                 th:text="${cat}">
                                         </option>
                                     </select>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('category')}" th:errors="*{category}"></div>
                                 </div>
                             </div>
 
@@ -43,21 +73,37 @@
                             <div class="row mb-3">
                                 <div class="col-md-4">
                                     <label for="totalPages" class="form-label">総ページ数 <span class="text-danger">*</span></label>
-                                    <input type="number" class="form-control" id="totalPages" th:field="*{totalPages}" required min="1" />
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="totalPages" 
+                                           th:field="*{totalPages}"
+                                           required
+                                           th:errorclass="is-invalid" />
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('totalPages')}" th:errors="*{totalPages}"></div>
                                 </div>
                                 <div class="col-md-4">
                                     <label for="currentPage" class="form-label">現在のページ</label>
-                                    <input type="number" class="form-control" id="currentPage" th:field="*{currentPage}" min="0" />
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="currentPage" 
+                                           th:field="*{currentPage}" 
+                                           min="0"
+                                           th:errorclass="is-invalid" />
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('currentPage')}" th:errors="*{currentPage}"></div>
                                 </div>
                                 <div class="col-md-4">
                                     <label for="readingStatus" class="form-label">読書状態 <span class="text-danger">*</span></label>
-                                    <select class="form-select" id="readingStatus" th:field="*{readingStatus}" required>
+                                    <select class="form-select" 
+                                            id="readingStatus" 
+                                            th:field="*{readingStatus}" 
+                                            required
+                                            th:errorclass="is-invalid">
                                         <option th:each="status : ${readingStatuses}"
                                                 th:value="${status}"
-                                                th:text="${status.displayName}"
-                                                th:selected="${status == book.readingStatus}">
+                                                th:text="${status.displayName}">
                                         </option>
                                     </select>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('readingStatus')}" th:errors="*{readingStatus}"></div>
                                 </div>
                             </div>
 
@@ -66,8 +112,18 @@
                                 <div class="col-12">
                                     <label for="coverImage" class="form-label">表紙画像</label>
                                     <div class="input-group">
-                                        <input type="file" class="form-control" id="coverImage" accept="image/*">
-                                        <button class="btn btn-outline-secondary" type="button" id="clearImage">クリア</button>
+                                        <input type="file" 
+                                               class="form-control file-input-custom" 
+                                               id="coverImage" 
+                                               accept="image/*">
+                                        <button class="btn btn-outline-secondary" 
+                                                type="button" 
+                                                id="clearImage">クリア</button>
+                                        <button class="btn btn-outline-primary d-flex align-items-center ml-3" 
+                                                type="button" 
+                                                id="scanButton">
+                                            <i class="bi bi-upc-scan me-1"></i>スキャン
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -76,7 +132,12 @@
                             <div class="row mb-3">
                                 <div class="col-12">
                                     <label for="memo" class="form-label">メモ</label>
-                                    <textarea class="form-control" id="memo" th:field="*{memo}" rows="3"></textarea>
+                                    <textarea class="form-control" 
+                                              id="memo" 
+                                              th:field="*{memo}" 
+                                              rows="3"
+                                              th:errorclass="is-invalid"></textarea>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('memo')}" th:errors="*{memo}"></div>
                                 </div>
                             </div>
 
@@ -87,9 +148,8 @@
                                 </small>
                                 <div class="flex-grow-1 d-flex justify-content-center register-cancel-button">
                                     <button type="submit" class="btn btn-primary">更新</button>
-                                    <a th:href="@{/books}" class="btn btn-secondary ms-2">キャンセル</a>
+                                    <a th:href="@{/books/{id}(id=${book.id})}" class="btn btn-secondary ms-2">キャンセル</a>
                                 </div>
-                                <!-- 左右対称にするためのダミー要素 -->
                                 <small class="invisible">dummy</small>
                             </div>
                         </div>
@@ -98,27 +158,28 @@
                         <div class="col-md-3">
                             <div class="card">
                                 <div class="card-body">
-                                    <label for="coverImage" class="form-label">表紙画像</label>
+                                    <label class="form-label">表紙画像</label>
                                     
-                                    <!-- 現在の画像表示エリア（デフォルト画像を含む） -->
-                                    <div id="currentImageDisplay" class="text-center mb-2">
-                                        <img th:if="${book.coverImage}" 
-                                             th:src="${book.coverImage}" 
-                                             class="img-thumbnail" 
-                                             alt="表紙画像"
-                                             style="max-height: 300px;">
-                                        <img th:unless="${book.coverImage}"
+                                    <!-- 現在の画像表示エリア -->
+                                    <div id="currentImageDisplay" class="book-cover-display">
+                                        <img th:if="${book.coverImage != null and book.coverImage != ''}"
+                                             th:src="${book.coverImage}"
+                                             class="img-thumbnail book-cover"
+                                             alt="表紙画像">
+                                        <img th:unless="${book.coverImage != null and book.coverImage != ''}"
                                              th:src="@{/images/default-book-cover.svg}"
-                                             class="img-thumbnail"
-                                             alt="デフォルト表紙画像"
-                                             style="max-height: 300px;">
+                                             class="img-thumbnail book-cover"
+                                             alt="デフォルト表紙画像">
                                     </div>
                                     
                                     <!-- プレビュー表示エリア -->
-                                    <div id="imagePreview" class="text-center mb-2" style="display:none;">
-                                        <img id="preview" class="img-thumbnail" alt="プレビュー" style="max-height: 300px;">
+                                    <div id="imagePreview" class="book-cover-display" style="display: none;">
+                                        <img id="preview" 
+                                             class="img-thumbnail book-cover" 
+                                             alt="プレビュー">
                                     </div>
                                     
+                                    <!-- 画像のBase64データを保持する隠しフィールド -->
                                     <input type="hidden" th:field="*{coverImage}" id="coverImageBase64">
                                 </div>
                             </div>
@@ -128,8 +189,16 @@
             </div>
         </div>
     </div>
-    
-    <script th:src="@{/js/image-upload.js}"></script>
+
+    <th:block layout:fragment="scripts">
+        <script src="https://unpkg.com/@zxing/library@latest"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+        <!-- カスタムスクリプト -->
+        <script th:src="@{/js/image-upload.js}"></script>
+        <script th:src="@{/js/form-validation.js}"></script>
+        <script th:src="@{/js/scanner/BookFormScanner.js}"></script>
+    </th:block>
 </body>
 </html>
 

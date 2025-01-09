@@ -118,12 +118,14 @@ public class BookViewController {
                     .orElseThrow(() -> new RuntimeException("本が見つかりません: " + id));
             
             BookForm form = new BookForm();
+            form.setId(id);  // IDを設定することを忘れずに
             form.setTitle(book.getTitle());
             form.setAuthor(book.getAuthor());
             form.setCategory(book.getCategory());
             form.setReadingStatus(book.getReadingStatus().name());
             form.setCurrentPage(book.getCurrentPage());
-            form.setTotalPages(book.getTotalPages() != null ? book.getTotalPages().toString() : "不明");
+            form.setTotalPages(book.getTotalPages() != null ? 
+                              book.getTotalPages().toString() : "不明");
             form.setCoverImage(book.getCoverImage());
             form.setMemo(book.getMemo());
             
@@ -134,7 +136,6 @@ public class BookViewController {
             model.addAttribute("categories", shelves.stream()
                 .map(Shelf::getName)
                 .collect(Collectors.toList()));
-            model.addAttribute("currentPage", "edit");
             
             return "books/edit";
         } catch (Exception e) {
@@ -150,6 +151,7 @@ public class BookViewController {
                            RedirectAttributes redirectAttributes,
                            Model model) {
         if (result.hasErrors()) {
+            // バリデーションエラーの場合、必要な属性を再設定
             model.addAttribute("readingStatuses", Book.ReadingStatus.values());
             List<Shelf> shelves = shelfService.getAllShelves();
             model.addAttribute("categories", shelves.stream()
@@ -159,8 +161,10 @@ public class BookViewController {
         }
 
         try {
-            Book book = new Book();
-            book.setId(id);
+            Book book = bookService.getBookById(id)
+                .orElseThrow(() -> new RuntimeException("本が見つかりません: " + id));
+            
+            // 既存の本の情報を更新
             book.setTitle(form.getTitle());
             book.setAuthor(form.getAuthor());
             book.setCategory(form.getCategory());
@@ -171,10 +175,18 @@ public class BookViewController {
             if ("不明".equals(form.getTotalPages())) {
                 book.setTotalPages(null);
             } else {
-                book.setTotalPages(Integer.parseInt(form.getTotalPages()));
+                try {
+                    book.setTotalPages(Integer.parseInt(form.getTotalPages()));
+                } catch (NumberFormatException e) {
+                    book.setTotalPages(null);
+                }
             }
             
-            book.setCoverImage(form.getCoverImage());
+            // 新しい表紙画像が選択された場合のみ更新
+            if (form.getCoverImage() != null && !form.getCoverImage().isEmpty()) {
+                book.setCoverImage(form.getCoverImage());
+            }
+            
             book.setMemo(form.getMemo());
 
             bookService.updateBook(id, book);
@@ -182,7 +194,7 @@ public class BookViewController {
             redirectAttributes.addFlashAttribute("messageType", "success");
             return "redirect:/books/" + id;
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("message", "更新に失敗しました");
+            redirectAttributes.addFlashAttribute("message", "更新に失敗しました: " + e.getMessage());
             redirectAttributes.addFlashAttribute("messageType", "error");
             return "redirect:/books/" + id + "/edit";
         }

@@ -347,22 +347,37 @@ function handleDragStart(e) {
         return;
     }
 
-    // ドラッグ開始時の情報を保存
+    isDragging = true;
     item.classList.add('dragging');
-    e.dataTransfer.effectAllowed = 'move';
     
-    const container = item.closest('.books-container');
-    const itemData = {
-        type: item.classList.contains('book-card') ? 'book' : 'divider',
-        id: item.getAttribute(item.classList.contains('book-card') ? 'data-book-id' : 'data-divider-id'),
-        originalShelfId: container.getAttribute('data-shelf-id'),
-        originalPosition: item.getAttribute('data-position')
-    };
+    try {
+        const container = item.closest('.books-container');
+        const itemData = {
+            type: item.classList.contains('book-card') ? 'book' : 'divider',
+            id: item.getAttribute(item.classList.contains('book-card') ? 'data-book-id' : 'data-divider-id'),
+            originalShelfId: container.getAttribute('data-shelf-id'),
+            originalPosition: item.getAttribute('data-position')
+        };
 
-    e.dataTransfer.setData('application/json', JSON.stringify(itemData));
+        // データが正しく設定されていることを確認
+        if (!itemData.id || !itemData.originalShelfId) {
+            throw new Error('Required drag data missing');
+        }
+
+        e.dataTransfer.setData('application/json', JSON.stringify(itemData));
+    } catch (error) {
+        console.error('Drag start error:', error);
+        e.preventDefault();
+        isDragging = false;
+        item.classList.remove('dragging');
+    }
 }
 
-// ドラッグオーバーの処理
+// グローバル変数としてスクロールのタイマーIDを保持
+let scrollInterval = null;
+const SCROLL_SPEED = 10; // スクロール速度（ピクセル/インターバル）
+const SCROLL_THRESHOLD = 150; // スクロールを開始する画面端からの距離（ピクセル）
+
 function handleDragOver(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -375,11 +390,16 @@ function handleDragOver(e) {
 
     // マウス位置を取得
     const mouseX = e.clientX;
+    const mouseY = e.clientY;
 
-    // コンテナ内の全ての要素（ドラッグ中の要素を除く）を取得
+    // ビューポートの高さを取得
+    const viewportHeight = window.innerHeight;
+
+    // スクロール処理
+    handleScroll(mouseY, viewportHeight);
+
+    // 最も近い要素を見つける処理（既存のコード）
     const items = [...container.querySelectorAll('.book-card:not(.dragging), .shelf-divider:not(.dragging)')];
-    
-    // 最も近い要素を見つける
     let closestItem = null;
     let closestDistance = Number.POSITIVE_INFINITY;
 
@@ -394,7 +414,6 @@ function handleDragOver(e) {
         }
     });
 
-    // 挿入位置の決定
     if (closestItem) {
         const box = closestItem.getBoundingClientRect();
         const insertAfter = mouseX > box.left + box.width / 2;
@@ -405,44 +424,90 @@ function handleDragOver(e) {
             closestItem.insertAdjacentElement('beforebegin', draggingItem);
         }
     } else {
-        // コンテナが空か、最後の位置の場合
         container.appendChild(draggingItem);
     }
 
-    // 位置情報を更新
     updatePositions(container);
 }
 
+function handleScroll(mouseY, viewportHeight) {
+    // スクロール開始位置の計算
+    const topThreshold = SCROLL_THRESHOLD;
+    const bottomThreshold = viewportHeight - SCROLL_THRESHOLD;
+
+    // 既存のスクロールインターバルをクリア
+    if (scrollInterval) {
+        clearInterval(scrollInterval);
+        scrollInterval = null;
+    }
+
+    // マウスが上端近くにある場合
+    if (mouseY < topThreshold) {
+        const speed = Math.max(1, (topThreshold - mouseY) / 10) * SCROLL_SPEED;
+        scrollInterval = setInterval(() => {
+            window.scrollBy(0, -speed);
+        }, 16);
+    }
+    // マウスが下端近くにある場合
+    else if (mouseY > bottomThreshold) {
+        const speed = Math.max(1, (mouseY - bottomThreshold) / 10) * SCROLL_SPEED;
+        scrollInterval = setInterval(() => {
+            window.scrollBy(0, speed);
+        }, 16);
+    }
+}
+
+// ドラッグ終了時にスクロールを停止
 function handleDragEnd(e) {
     e.preventDefault();
+    isDragging = false;
+    
     const item = e.target.closest('.book-card, .shelf-divider');
     if (!item) return;
+
+    // スクロールを停止
+    if (scrollInterval) {
+        clearInterval(scrollInterval);
+        scrollInterval = null;
+    }
 
     item.classList.remove('dragging');
     
     const newContainer = item.closest('.books-container');
     if (!newContainer) return;
 
-    const newShelfId = newContainer.getAttribute('data-shelf-id');
-    let originalShelfId;
-    
     try {
-        const dragData = JSON.parse(e.dataTransfer.getData('application/json'));
-        originalShelfId = dragData.originalShelfId;
-    } catch (error) {
-        console.error('Error parsing drag data:', error);
-        return;
-    }
-
-    // 本棚が変更された場合、両方の本棚の順序を更新
-    if (newShelfId !== originalShelfId) {
-        saveNewOrder(newContainer);
-        const originalContainer = document.querySelector(`.books-container[data-shelf-id="${originalShelfId}"]`);
-        if (originalContainer) {
-            saveNewOrder(originalContainer);
+        // データ取得を安全に行う
+        const jsonData = e.dataTransfer.getData('application/json');
+        if (!jsonData) {
+            console.warn('No drag data found');
+            return;
         }
-    } else {
-        saveNewOrder(newContainer);
+
+        const dragData = JSON.parse(jsonData);
+        if (!dragData || !dragData.originalShelfId) {
+            console.warn('Invalid drag data format');
+            return;
+        }
+
+        const newShelfId = newContainer.getAttribute('data-shelf-id');
+        const originalShelfId = dragData.originalShelfId;
+
+        if (newShelfId !== originalShelfId) {
+            saveNewOrder(newContainer);
+            const originalContainer = document.querySelector(
+                `.books-container[data-shelf-id="${originalShelfId}"]`
+            );
+            if (originalContainer) {
+                saveNewOrder(originalContainer);
+            }
+        } else {
+            saveNewOrder(newContainer);
+        }
+    } catch (error) {
+        console.error('Drag end error:', error);
+        // エラーが発生した場合でもUIを正常な状態に戻す
+        window.location.reload();
     }
 }
 
@@ -608,15 +673,6 @@ function deleteDivider(id, element) {
 
 
 
-
-
-
-
-
-
-
-
-
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Script loaded');  // スクリプトが読み込まれたことを確認
     
@@ -657,8 +713,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const popup = document.getElementById('coverImagePopup');
     const popupImage = document.getElementById('popupImage');
     let activeBook = null;
+    let isSortMode = false;  // ソートモードの状態を追跡
 
     function showPopup(book) {
+        // ソートモード中はポップアップを表示しない
+        if (isSortMode) return;
+
         const coverImage = book.dataset.coverImage;
         if (!popup || !popupImage) return;
 
@@ -681,7 +741,6 @@ document.addEventListener('DOMContentLoaded', function() {
         popup.classList.remove('show');
         activeBook = null;
 
-        // アニメーション完了後に非表示
         const onTransitionEnd = () => {
             if (!activeBook) {
                 popup.style.display = 'none';
@@ -691,16 +750,37 @@ document.addEventListener('DOMContentLoaded', function() {
         popup.addEventListener('transitionend', onTransitionEnd);
     }
 
+    // 順番入れ替えモードの切り替えを監視
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.target.classList.contains('sorting-mode')) {
+                isSortMode = true;
+                hidePopup();  // ソートモード開始時にポップアップを非表示
+            } else {
+                isSortMode = false;
+            }
+        });
+    });
+
+    // books-containerの監視を開始
+    document.querySelectorAll('.books-container').forEach(container => {
+        observer.observe(container, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+    });
+
     // 本のカードとその子要素のイベントを管理
     document.querySelectorAll('.book-card').forEach(book => {
         const handleEnter = () => {
-            if (activeBook !== book) {
+            if (!isSortMode && activeBook !== book) {
                 showPopup(book);
             }
         };
 
         const handleLeave = (e) => {
-            // 関連する要素にマウスが移動した場合は無視
+            if (isSortMode) return;  // ソートモード中は何もしない
+            
             const relatedTarget = e.relatedTarget;
             if (relatedTarget && (book.contains(relatedTarget) || popup.contains(relatedTarget))) {
                 return;
@@ -708,20 +788,25 @@ document.addEventListener('DOMContentLoaded', function() {
             hidePopup();
         };
 
-        // 本のカード全体にイベントを設定
         book.addEventListener('mouseenter', handleEnter);
         book.addEventListener('mouseleave', handleLeave);
     });
 
     // ポップアップ自体のイベントを管理
     popup.addEventListener('mouseleave', (e) => {
-        // 本のカードにマウスが移動した場合は無視
+        if (isSortMode) return;  // ソートモード中は何もしない
+
         const relatedTarget = e.relatedTarget;
         if (relatedTarget && activeBook && activeBook.contains(relatedTarget)) {
             return;
         }
         hidePopup();
     });
+
+    // クリーンアップ
+    return () => {
+        observer.disconnect();
+    };
 });
 
 //トップページ(本棚ページ)では「本の一覧」を非表示にする

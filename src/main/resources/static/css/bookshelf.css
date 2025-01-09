@@ -119,14 +119,6 @@ main {
     pointer-events: none;
 }
 
-/* 新規登録ボタン */
-.add-book-btn {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 1000;
-}
-
 .detail-content {
     margin-top: 2rem;
 }
@@ -395,6 +387,7 @@ main {
 
 .dropdown-menu.show {
     display: block;
+    z-index: 99;
 }
 
 .dropdown-item {
@@ -868,7 +861,7 @@ main {
     opacity: 0.6;
     cursor: grabbing;
     position: relative;
-    z-index: 1000;
+    z-index: 99;
     transform: scale(1.05);
     transition: transform 0.2s ease;
 }
@@ -925,3 +918,5 @@ html {
     cursor: grab;
     transform: translateY(-2px);
 }
+
+
