@@ -108,5 +108,14 @@ public class ShelfService {
         // updatePositionsのメソッド名を新しいものに変更
         shelfRepository.updateShelfPositions(fromPosition);
     }
+    
+    @Transactional
+    public Shelf renameShelf(Long shelfId, String newName) {
+        Shelf shelf = shelfRepository.findById(shelfId)
+            .orElseThrow(() -> new IllegalArgumentException("指定された本棚が見つかりません"));
+            
+        shelf.setName(newName);
+        return shelfRepository.save(shelf);
+    }
 }
 

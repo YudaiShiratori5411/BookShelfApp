@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-        // 新しい段追加ボタンのイベントリスナー
+    // 新しい段追加ボタンのイベントリスナー
     let currentShelfId = null;
     const addShelfModal = new bootstrap.Modal(document.getElementById('addShelfModal'));
     
@@ -887,6 +887,82 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    let currentShelfId = null;
+    const renameShelfModal = new bootstrap.Modal(document.getElementById('renameShelfModal'));
+    
+    // 本棚名変更ボタンのイベントリスナー
+    document.querySelectorAll('.rename-shelf').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // クリックされた本棚のIDと現在の名前を保存
+            currentShelfId = this.getAttribute('data-shelf-id');
+            const currentName = this.getAttribute('data-shelf-name');
+            
+            // 現在の名前をフォームに設定
+            document.getElementById('newShelfName').value = currentName;
+            
+            // モーダルを表示
+            renameShelfModal.show();
+            
+            // ドロップダウンメニューを閉じる
+            const dropdownMenu = this.closest('.dropdown-menu');
+            const dropdownToggle = document.querySelector(`[aria-controls="${dropdownMenu.id}"]`);
+            const dropdown = bootstrap.Dropdown.getInstance(dropdownToggle);
+            if (dropdown) {
+                dropdown.hide();
+            }
+        });
+    });
+    
+    // 保存ボタンのイベントリスナー
+    document.getElementById('saveRename').addEventListener('click', function() {
+        const nameInput = document.getElementById('newShelfName');
+        const newName = nameInput.value.trim();
+        
+        if (!newName) {
+            alert('本棚の名前を入力してください。');
+            return;
+        }
+
+        fetch(`/api/shelves/${currentShelfId}/rename`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: newName
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(text || '本棚名の変更に失敗しました');
+                });
+            }
+            // レスポンスの処理が完了してから、モーダルを閉じてリロード
+            renameShelfModal.hide();
+            nameInput.value = '';
+            // 少し遅延を入れてリロード
+            setTimeout(() => {
+                window.location.reload();
+            }, 100);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('本棚名の変更に失敗しました。もう一度お試しください。');
+        });
+    });
+
+    // モーダルが閉じられたときにフォームをリセット
+    document.getElementById('renameShelfModal').addEventListener('hidden.bs.modal', function () {
+        document.getElementById('newShelfName').value = '';
+        currentShelfId = null;
+    });
 });
     
     

@@ -56,6 +56,14 @@
                                     この段を削除
                                 </button>
                             </li>
+                            <li>
+                                <button type="button"
+                                        class="dropdown-item rename-shelf"
+                                        th:data-shelf-id="${shelf.id}"
+                                        th:data-shelf-name="${shelf.name}">
+                                    本棚名を変更
+                                </button>
+                            </li>
                         </ul>
                         
                         <!-- 仕切りのHTML-->
@@ -119,11 +127,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- 新規登録ボタン -->
-<!--        <a th:href="@{/books/new}" class="btn btn-primary add-book-btn">-->
-<!--            新しい本を登録-->
-<!--        </a>-->
         
         <div class="modal fade" id="addShelfModal" tabindex="-1" aria-labelledby="addShelfModalLabel" aria-hidden="true">
             <div class="modal-dialog">
@@ -143,6 +146,29 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
                         <button type="button" class="btn btn-primary" id="saveShelf">追加</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal fade" id="renameShelfModal" tabindex="-1" aria-labelledby="renameShelfModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="renameShelfModalLabel">本棚名を変更</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="renameShelfForm">
+                            <div class="mb-3">
+                                <label for="newShelfName" class="form-label">新しい名前</label>
+                                <input type="text" class="form-control" id="newShelfName" required>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                        <button type="button" class="btn btn-primary" id="saveRename">変更</button>
                     </div>
                 </div>
             </div>
