@@ -5,6 +5,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchResults = document.getElementById('searchResults');
     const noResults = document.getElementById('noResults');
     
+        // 要素が存在するか確認
+    if (!searchInput || !searchButton) {
+        console.log('Search elements not found. This might be the login page.');
+        return;
+    }
+    
     // モーダルの初期化
     const searchResultModal = new bootstrap.Modal(searchResultModalElement);
 

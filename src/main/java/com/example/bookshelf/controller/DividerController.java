@@ -20,47 +20,97 @@ import com.example.bookshelf.dto.DividerResponseDto;
 import com.example.bookshelf.dto.ReorderDividersRequest;
 import com.example.bookshelf.dto.UpdateDividerRequest;
 import com.example.bookshelf.entity.Divider;
-import com.example.bookshelf.repository.DividerRepository;
 import com.example.bookshelf.service.DividerService;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/dividers")
 @RequiredArgsConstructor
 public class DividerController {
-
     private final DividerService dividerService;
-    private final DividerRepository dividerRepository;
 
     @PostMapping
-    public ResponseEntity<DividerResponseDto> createDivider(@RequestBody CreateDividerRequest request) {
-        Divider divider = dividerService.createDivider(request.getShelfId(), request.getLabel(), request.getPosition());
-        return ResponseEntity.ok(DividerResponseDto.fromEntity(divider));
+    public ResponseEntity<?> createDivider(@RequestBody CreateDividerRequest request, 
+                                         HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error", "ログインが必要です"));
+        }
+
+        try {
+            Divider divider = dividerService.createDivider(
+                request.getShelfId(), 
+                request.getLabel(), 
+                request.getPosition(),
+                userId
+            );
+            return ResponseEntity.ok(DividerResponseDto.fromEntity(divider));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", e.getMessage()));
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<DividerResponseDto> updateDivider(
-            @PathVariable Long id,
-            @RequestBody UpdateDividerRequest request) {
-        Divider divider = dividerService.updateDivider(id, request.getLabel(), request.getPosition());
-        return ResponseEntity.ok(DividerResponseDto.fromEntity(divider));
+    public ResponseEntity<?> updateDivider(@PathVariable Long id,
+                                         @RequestBody UpdateDividerRequest request,
+                                         HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error", "ログインが必要です"));
+        }
+
+        try {
+            Divider divider = dividerService.updateDivider(id, 
+                                                         request.getLabel(), 
+                                                         request.getPosition(),
+                                                         userId);
+            return ResponseEntity.ok(DividerResponseDto.fromEntity(divider));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", e.getMessage()));
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDivider(@PathVariable Long id) {
-        dividerService.deleteDivider(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deleteDivider(@PathVariable Long id, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error", "ログインが必要です"));
+        }
+
+        try {
+            dividerService.deleteDivider(id, userId);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", e.getMessage()));
+        }
     }
     
     @PostMapping("/reorder")
-    public ResponseEntity<Map<String, Object>> reorderDividers(@RequestBody ReorderDividersRequest request) {
-        try {
-            System.out.println("Received reorder request: " + request);
-            dividerService.reorderDividers(request.getShelfId(), request.getDividerPositions());
+    public ResponseEntity<?> reorderDividers(@RequestBody ReorderDividersRequest request,
+                                           HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error", "ログインが必要です"));
+        }
 
-            // 更新後の位置を取得して返す
-            List<Divider> updatedDividers = dividerRepository.findAllByShelf_Id(Long.parseLong(request.getShelfId()));
+        try {
+            dividerService.reorderDividers(request.getShelfId(), 
+                                         request.getDividerPositions(),
+                                         userId);
+            
+            List<Divider> updatedDividers = dividerService.getDividersByShelfId(
+                Long.parseLong(request.getShelfId()), 
+                userId
+            );
             
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Successfully reordered dividers");
@@ -73,7 +123,6 @@ public class DividerController {
                 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Failed to save: " + e.getMessage()));
         }

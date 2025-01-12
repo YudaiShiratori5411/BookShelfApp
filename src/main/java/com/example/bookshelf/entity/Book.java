@@ -11,6 +11,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
@@ -22,7 +23,10 @@ import lombok.ToString;
 
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "shelf"})
 @Entity
-@Table(name = "books")
+@Table(name = "books", indexes = {
+	    @Index(name = "idx_book_user", columnList = "user_id"),
+	    @Index(name = "idx_book_position", columnList = "position")
+	})
 @Data
 @EqualsAndHashCode(exclude = "shelf")
 public class Book implements Sortable {
@@ -60,6 +64,9 @@ public class Book implements Sortable {
     
     @Column(name = "position")
     private Integer position;
+    
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @Override
     public Long getId() {

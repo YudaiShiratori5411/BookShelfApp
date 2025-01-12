@@ -1,0 +1,40 @@
+/* ログインタブがアクティブな時の青いテーマ */
+.nav-tabs .nav-link.active[data-bs-target="#login-pane"] {
+    transform: translateY(-2px);
+    font-size: 1.1rem;
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    border-bottom: 2px solid #007bff;
+    color: #007bff !important;
+}
+
+/* 新規登録タブがアクティブな時の緑のテーマ */
+.nav-tabs .nav-link.active[data-bs-target="#register-pane"] {
+    transform: translateY(-2px);
+    font-size: 1.1rem;
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    border-bottom: 2px solid #28a745;
+    color: #28a745 !important;
+}
+
+/* 共通のホバーエフェクト */
+.nav-tabs .nav-link:hover:not(.active) {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* アイコンのトランジション */
+.nav-tabs .nav-link i {
+    transition: all 0.3s ease;
+}
+
+/* アクティブなタブのアイコンの色を対応させる */
+.nav-tabs .nav-link.active[data-bs-target="#login-pane"] i {
+    color: #007bff;
+}
+.nav-tabs .nav-link.active[data-bs-target="#register-pane"] i {
+    color: #28a745;
+}

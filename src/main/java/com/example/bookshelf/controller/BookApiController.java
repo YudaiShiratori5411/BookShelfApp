@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -27,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.example.bookshelf.dto.ReorderBooksRequest;
@@ -35,6 +35,8 @@ import com.example.bookshelf.entity.Book.ReadingStatus;
 import com.example.bookshelf.service.BookService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("/api")
@@ -55,16 +57,31 @@ public class BookApiController {
         this.bookService = bookService;
     }
 
+    // ユーザーID取得のユーティリティメソッド
+    private Long getCurrentUserId(HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "ログインが必要です");
+        }
+        return userId;
+    }
+
     @PostMapping
-    public ResponseEntity<Book> createBook(@RequestBody Book book) {
+    public ResponseEntity<Book> createBook(@RequestBody Book book, HttpSession session) {
+        Long userId = getCurrentUserId(session);
+        book.setUserId(userId);
         Book savedBook = bookService.saveBook(book);
         return ResponseEntity.ok(savedBook);
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Book> updateBook(@PathVariable Long id, @RequestBody Book bookDetails) {
+    public ResponseEntity<Book> updateBook(
+            @PathVariable Long id, 
+            @RequestBody Book bookDetails,
+            HttpSession session) {
         try {
-            Book updatedBook = bookService.updateBook(id, bookDetails);
+            Long userId = getCurrentUserId(session);
+            Book updatedBook = bookService.updateBook(id, bookDetails, userId);
             return ResponseEntity.ok(updatedBook);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
@@ -74,9 +91,11 @@ public class BookApiController {
     @PatchMapping("/{id}/progress")
     public ResponseEntity<Book> updateReadingProgress(
             @PathVariable Long id,
-            @RequestBody Map<String, Integer> progress) {
+            @RequestBody Map<String, Integer> progress,
+            HttpSession session) {
         try {
-            Book updatedBook = bookService.updateReadingProgress(id, progress.get("currentPage"));
+            Long userId = getCurrentUserId(session);
+            Book updatedBook = bookService.updateReadingProgress(id, progress.get("currentPage"), userId);
             return ResponseEntity.ok(updatedBook);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
@@ -86,9 +105,11 @@ public class BookApiController {
     @PatchMapping("/{id}/memo")
     public ResponseEntity<Book> updateMemo(
             @PathVariable Long id,
-            @RequestBody Map<String, String> memo) {
+            @RequestBody Map<String, String> memo,
+            HttpSession session) {
         try {
-            Book updatedBook = bookService.updateMemo(id, memo.get("memo"));
+            Long userId = getCurrentUserId(session);
+            Book updatedBook = bookService.updateMemo(id, memo.get("memo"), userId);
             return ResponseEntity.ok(updatedBook);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
@@ -96,9 +117,12 @@ public class BookApiController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteBook(
+            @PathVariable Long id,
+            HttpSession session) {
         try {
-            bookService.deleteBook(id);
+            Long userId = getCurrentUserId(session);
+            bookService.deleteBook(id, userId);
             return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
@@ -106,46 +130,63 @@ public class BookApiController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Book>> getAllBooks() {
-        List<Book> books = bookService.getAllBooks();
+    public ResponseEntity<List<Book>> getAllBooks(HttpSession session) {
+        Long userId = getCurrentUserId(session);
+        List<Book> books = bookService.getAllBooks(userId);
         return ResponseEntity.ok(books);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Book> getBookById(@PathVariable Long id) {
-        return bookService.getBookById(id)
+    public ResponseEntity<Book> getBookById(
+            @PathVariable Long id,
+            HttpSession session) {
+        Long userId = getCurrentUserId(session);
+        return bookService.getBookById(id, userId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/category/{category}")
-    public ResponseEntity<List<Book>> getBooksByCategory(@PathVariable String category) {
-        List<Book> books = bookService.getBooksByCategory(category);
+    public ResponseEntity<List<Book>> getBooksByCategory(
+            @PathVariable String category,
+            HttpSession session) {
+        Long userId = getCurrentUserId(session);
+        List<Book> books = bookService.getBooksByCategory(category, userId);
         return ResponseEntity.ok(books);
     }
 
     @GetMapping("/status/{status}")
-    public ResponseEntity<List<Book>> getBooksByStatus(@PathVariable ReadingStatus status) {
-        List<Book> books = bookService.getBooksByReadingStatus(status);
+    public ResponseEntity<List<Book>> getBooksByStatus(
+            @PathVariable ReadingStatus status,
+            HttpSession session) {
+        Long userId = getCurrentUserId(session);
+        List<Book> books = bookService.getBooksByReadingStatus(status, userId);
         return ResponseEntity.ok(books);
     }
 
     @GetMapping("/progress/{percentage}")
-    public ResponseEntity<List<Book>> getBooksByProgress(@PathVariable double percentage) {
-        List<Book> books = bookService.getBooksByProgressGreaterThan(percentage);
+    public ResponseEntity<List<Book>> getBooksByProgress(
+            @PathVariable double percentage,
+            HttpSession session) {
+        Long userId = getCurrentUserId(session);
+        List<Book> books = bookService.getBooksByProgressGreaterThan(percentage, userId);
         return ResponseEntity.ok(books);
     }
 
     @GetMapping("/recent")
-    public ResponseEntity<List<Book>> getRecentlyUpdatedBooks() {
-        List<Book> books = bookService.getRecentlyUpdatedBooks();
+    public ResponseEntity<List<Book>> getRecentlyUpdatedBooks(HttpSession session) {
+        Long userId = getCurrentUserId(session);
+        List<Book> books = bookService.getRecentlyUpdatedBooks(userId);
         return ResponseEntity.ok(books);
     }
     
     @PostMapping("/reorder")
-    public ResponseEntity<?> reorderBooks(@RequestBody ReorderBooksRequest request) {
+    public ResponseEntity<?> reorderBooks(
+            @RequestBody ReorderBooksRequest request,
+            HttpSession session) {
         try {
-            bookService.reorderBooks(request.getShelfId(), request.getBookPositions());
+            Long userId = getCurrentUserId(session);
+            bookService.reorderBooks(request.getShelfId(), request.getBookPositions(), userId);
             return ResponseEntity.ok(Map.of("message", "順序を保存しました"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -155,29 +196,19 @@ public class BookApiController {
     
     @GetMapping("/search")
     @Transactional(readOnly = true)
-    public ResponseEntity<List<Book>> searchBooks(@RequestParam(required = false) String query) {
+    public ResponseEntity<List<Book>> searchBooks(
+            @RequestParam(required = false) String query,
+            HttpSession session) {
         try {
+            Long userId = getCurrentUserId(session);
+
             if (query == null || query.trim().isEmpty()) {
                 return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(Collections.emptyList());
             }
 
-            List<Book> results = bookService.searchBooks(query.trim());
-            
-            List<Map<String, Object>> simplifiedResults = results.stream()
-                .map(book -> {
-                    Map<String, Object> simplifiedBook = new HashMap<>();
-                    simplifiedBook.put("id", book.getId());
-                    simplifiedBook.put("title", book.getTitle());
-                    simplifiedBook.put("author", book.getAuthor());
-                    simplifiedBook.put("totalPages", book.getTotalPages());
-                    simplifiedBook.put("currentPage", book.getCurrentPage());
-                    simplifiedBook.put("readingStatus", book.getReadingStatus());
-                    return simplifiedBook;
-                })
-                .collect(Collectors.toList());
-
+            List<Book> results = bookService.searchBooks(query.trim(), userId);
             return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(results);

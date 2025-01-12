@@ -33,15 +33,15 @@ public class BookService {
     
     @Transactional
     public Book saveBook(Book book) {
-        // カテゴリーに基づいて適切な本棚を検索
-        Shelf shelf = shelfRepository.findByName(book.getCategory())
+        // カテゴリーと所有者に基づいて適切な本棚を検索
+        Shelf shelf = shelfRepository.findByNameAndUserId(book.getCategory(), book.getUserId())
                 .orElseThrow(() -> new RuntimeException("該当する本棚が見つかりません: " + book.getCategory()));
         
         // 本棚を設定
         book.setShelf(shelf);
         
         // その本棚の最大position値を取得し、新しい本のpositionを設定
-        Integer maxPosition = bookRepository.findMaxPositionByShelfId(shelf.getId());
+        Integer maxPosition = bookRepository.findMaxPositionByShelfIdAndUserId(shelf.getId(), book.getUserId());
         book.setPosition(maxPosition != null ? maxPosition + 1 : 0);
         
         return bookRepository.save(book);
@@ -49,8 +49,8 @@ public class BookService {
 
     // 本の情報更新
     @Transactional
-    public Book updateBook(Long id, Book bookDetails) {
-        Book book = bookRepository.findById(id)
+    public Book updateBook(Long id, Book bookDetails, Long userId) {
+        Book book = bookRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new RuntimeException("本が見つかりません: " + id));
         
         book.setTitle(bookDetails.getTitle());
@@ -66,8 +66,8 @@ public class BookService {
     }
 
     // 読書進捗の更新
-    public Book updateReadingProgress(Long id, Integer currentPage) {
-        Book book = bookRepository.findById(id)
+    public Book updateReadingProgress(Long id, Integer currentPage, Long userId) {
+        Book book = bookRepository.findByIdAndUserId(id, userId)
             .orElseThrow(() -> new RuntimeException("本が見つかりません: " + id));
         
         book.setCurrentPage(currentPage);
@@ -83,8 +83,8 @@ public class BookService {
     }
 
     // メモの更新
-    public Book updateMemo(Long id, String memo) {
-        Book book = bookRepository.findById(id)
+    public Book updateMemo(Long id, String memo, Long userId) {
+        Book book = bookRepository.findByIdAndUserId(id, userId)
             .orElseThrow(() -> new RuntimeException("本が見つかりません: " + id));
         
         book.setMemo(memo);
@@ -92,14 +92,17 @@ public class BookService {
     }
 
     // 本の削除
-    public void deleteBook(Long id) {
-        bookRepository.deleteById(id);
+    public void deleteBook(Long id, Long userId) {
+        if (!bookRepository.existsByIdAndUserId(id, userId)) {
+            throw new RuntimeException("本が見つかりません: " + id);
+        }
+        bookRepository.deleteByIdAndUserId(id, userId);
     }
 
     // 本の取得（ID指定）
-    public Optional<Book> getBookById(Long id) {
+    public Optional<Book> getBookById(Long id, Long userId) {
         try {
-            return bookRepository.findById(id);
+            return bookRepository.findByIdAndUserId(id, userId);
         } catch (Exception e) {
             System.err.println("Error in getBookById: " + e.getMessage());
             e.printStackTrace();
@@ -107,49 +110,50 @@ public class BookService {
         }
     }
 
-    // 全ての本を取得
-    public List<Book> getAllBooks() {
-        return bookRepository.findAll();
+    // ユーザーの全ての本を取得
+    public List<Book> getAllBooks(Long userId) {
+        return bookRepository.findByUserId(userId);
     }
 
     // カテゴリーで本を検索
-    public List<Book> getBooksByCategory(String category) {
-        return bookRepository.findByCategory(category);
+    public List<Book> getBooksByCategory(String category, Long userId) {
+        return bookRepository.findByCategoryAndUserId(category, userId);
     }
 
     // 読書状態で本を検索
-    public List<Book> getBooksByReadingStatus(ReadingStatus status) {
-        return bookRepository.findByReadingStatus(status);
+    public List<Book> getBooksByReadingStatus(ReadingStatus status, Long userId) {
+        return bookRepository.findByReadingStatusAndUserId(status, userId);
     }
 
     // 進捗率で本を検索
-    public List<Book> getBooksByProgressGreaterThan(double percentage) {
-        return bookRepository.findByReadingProgressGreaterThan(percentage);
+    public List<Book> getBooksByProgressGreaterThan(double percentage, Long userId) {
+        return bookRepository.findByReadingProgressGreaterThanAndUserId(percentage, userId);
     }
 
     // 最近更新された本を取得
-    public List<Book> getRecentlyUpdatedBooks() {
-        return bookRepository.findTop10ByOrderByUpdatedAtDesc();
+    public List<Book> getRecentlyUpdatedBooks(Long userId) {
+        return bookRepository.findTop10ByUserIdOrderByUpdatedAtDesc(userId);
     }
     
     // 検索メソッド
-    public List<Book> searchBooks(String title, String author, String category) {
-        return bookRepository.searchBooks(
+    public List<Book> searchBooks(String title, String author, String category, Long userId) {
+        return bookRepository.searchBooksByUserId(
             title.isEmpty() ? null : title,
             author.isEmpty() ? null : author,
-            category.isEmpty() ? null : category
+            category.isEmpty() ? null : category,
+            userId
         );
     }
     
     @Transactional(readOnly = true)
-    public List<Book> searchBooks(String query) {
+    public List<Book> searchBooks(String query, Long userId) {
         if (query == null || query.trim().isEmpty()) {
             return Collections.emptyList();
         }
         
         String searchQuery = query.toLowerCase();
         try {
-            return bookRepository.findAll().stream()
+            return bookRepository.findByUserId(userId).stream()
                 .filter(book -> 
                     (book.getTitle() != null && book.getTitle().toLowerCase().contains(searchQuery)) ||
                     (book.getAuthor() != null && book.getAuthor().toLowerCase().contains(searchQuery)))
@@ -163,9 +167,9 @@ public class BookService {
         }
     }
     
-    // ReadingStatusの更新メソッドを追加
-    public Book updateReadingStatus(Long id, ReadingStatus status) {
-        Book book = bookRepository.findById(id)
+    // ReadingStatusの更新メソッド
+    public Book updateReadingStatus(Long id, ReadingStatus status, Long userId) {
+        Book book = bookRepository.findByIdAndUserId(id, userId)
             .orElseThrow(() -> new RuntimeException("本が見つかりません: " + id));
         
         book.setReadingStatus(status);
@@ -174,16 +178,16 @@ public class BookService {
     
     // 順序保存のメソッド
     @Transactional
-    public void reorderBooks(String shelfId, List<ReorderBooksRequest.BookPosition> positions) {
+    public void reorderBooks(String shelfId, List<ReorderBooksRequest.BookPosition> positions, Long userId) {
         Long shelfIdLong = Long.parseLong(shelfId);
-        Shelf shelf = shelfRepository.findById(shelfIdLong)
+        Shelf shelf = shelfRepository.findByIdAndUserId(shelfIdLong, userId)
             .orElseThrow(() -> new IllegalArgumentException("Shelf not found: " + shelfId));
 
         // 一時的な位置を使用（競合を避けるため）
         int offset = 10000;
         positions.forEach(pos -> {
             Long bookId = Long.parseLong(pos.getId());
-            Book book = bookRepository.findById(bookId)
+            Book book = bookRepository.findByIdAndUserId(bookId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("Book not found: " + bookId));
             
             // 本棚が変更された場合は更新
@@ -198,7 +202,7 @@ public class BookService {
         // 最終的な位置に更新
         positions.forEach(pos -> {
             Long bookId = Long.parseLong(pos.getId());
-            bookRepository.updatePosition(bookId, pos.getPosition());
+            bookRepository.updatePositionForUser(bookId, pos.getPosition(), userId);
         });
         
         bookRepository.flush();

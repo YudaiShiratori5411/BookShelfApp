@@ -16,17 +16,20 @@ import lombok.Data;
 @Table(name = "reading_goals")
 @Data
 public class ReadingGoal {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    @OneToOne
-    @JoinColumn(name = "book_id")
-    private Book book;
-    
-    @Column(name = "target_completion_date")
-    private LocalDate targetCompletionDate;
-    
-    @Column(name = "daily_pages_goal")
-    private Integer dailyPagesGoal;
+   @Id
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
+   private Long id;
+   
+   @OneToOne
+   @JoinColumn(name = "book_id")
+   private Book book;
+   
+   @Column(name = "target_completion_date")
+   private LocalDate targetCompletionDate;
+   
+   @Column(name = "daily_pages_goal")
+   private Integer dailyPagesGoal;
+   
+   @Column(name = "user_id", nullable = false)
+   private Long userId;
 }

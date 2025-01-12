@@ -20,6 +20,7 @@ import com.example.bookshelf.entity.Shelf;
 import com.example.bookshelf.service.BookService;
 import com.example.bookshelf.service.ShelfService;
 
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
 @Controller
@@ -34,19 +35,29 @@ public class BookViewController {
     }
 
     @GetMapping
-    public String listBooks(Model model) {
-        List<Shelf> shelves = shelfService.getAllShelvesWithBooks();
+    public String listBooks(Model model, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
+        List<Shelf> shelves = shelfService.getAllShelvesWithBooks(userId);
         model.addAttribute("shelves", shelves);
         return "books/list";
     }
 
     @GetMapping("/new")
-    public String newBookForm(Model model) {
+    public String newBookForm(Model model, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
         // BookFormのインスタンスを作成
         model.addAttribute("book", new BookForm());
         
         // カテゴリーリストを取得
-        List<Shelf> shelves = shelfService.getAllShelves();
+        List<Shelf> shelves = shelfService.getAllShelves(userId);
         model.addAttribute("categories", shelves.stream()
             .map(Shelf::getName)
             .collect(Collectors.toList()));
@@ -58,10 +69,15 @@ public class BookViewController {
     public String createBook(@ModelAttribute("book") @Valid BookForm form, 
                            BindingResult result, 
                            RedirectAttributes redirectAttributes,
-                           Model model) {
+                           Model model,
+                           HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
         if (result.hasErrors()) {
-            // バリデーションエラーの場合、カテゴリーリストを再取得
-            List<Shelf> shelves = shelfService.getAllShelves();
+            List<Shelf> shelves = shelfService.getAllShelves(userId);
             model.addAttribute("categories", shelves.stream()
                 .map(Shelf::getName)
                 .collect(Collectors.toList()));
@@ -75,8 +91,8 @@ public class BookViewController {
             book.setCategory(form.getCategory());
             book.setReadingStatus(Book.ReadingStatus.valueOf(form.getReadingStatus()));
             book.setCurrentPage(form.getCurrentPage());
+            book.setUserId(userId);  // ユーザーID設定
             
-            // totalPagesの変換処理
             if ("不明".equals(form.getTotalPages())) {
                 book.setTotalPages(null);
             } else {
@@ -98,9 +114,14 @@ public class BookViewController {
     }
    
     @GetMapping("/{id}")
-    public String showBookDetail(@PathVariable Long id, Model model) {
+    public String showBookDetail(@PathVariable Long id, Model model, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
         try {
-            Book book = bookService.getBookById(id)
+            Book book = bookService.getBookById(id, userId)
                     .orElseThrow(() -> new RuntimeException("本が見つかりません: " + id));
             model.addAttribute("book", book);
             return "books/detail";
@@ -112,13 +133,18 @@ public class BookViewController {
     }
    
     @GetMapping("/{id}/edit")
-    public String editBookForm(@PathVariable Long id, Model model) {
+    public String editBookForm(@PathVariable Long id, Model model, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
         try {
-            Book book = bookService.getBookById(id)
+            Book book = bookService.getBookById(id, userId)
                     .orElseThrow(() -> new RuntimeException("本が見つかりません: " + id));
             
             BookForm form = new BookForm();
-            form.setId(id);  // IDを設定することを忘れずに
+            form.setId(id);
             form.setTitle(book.getTitle());
             form.setAuthor(book.getAuthor());
             form.setCategory(book.getCategory());
@@ -132,7 +158,7 @@ public class BookViewController {
             model.addAttribute("book", form);
             model.addAttribute("readingStatuses", Book.ReadingStatus.values());
             
-            List<Shelf> shelves = shelfService.getAllShelves();
+            List<Shelf> shelves = shelfService.getAllShelves(userId);
             model.addAttribute("categories", shelves.stream()
                 .map(Shelf::getName)
                 .collect(Collectors.toList()));
@@ -149,11 +175,16 @@ public class BookViewController {
                            @ModelAttribute("book") @Valid BookForm form,
                            BindingResult result,
                            RedirectAttributes redirectAttributes,
-                           Model model) {
+                           Model model,
+                           HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
         if (result.hasErrors()) {
-            // バリデーションエラーの場合、必要な属性を再設定
             model.addAttribute("readingStatuses", Book.ReadingStatus.values());
-            List<Shelf> shelves = shelfService.getAllShelves();
+            List<Shelf> shelves = shelfService.getAllShelves(userId);
             model.addAttribute("categories", shelves.stream()
                 .map(Shelf::getName)
                 .collect(Collectors.toList()));
@@ -161,17 +192,15 @@ public class BookViewController {
         }
 
         try {
-            Book book = bookService.getBookById(id)
+            Book book = bookService.getBookById(id, userId)
                 .orElseThrow(() -> new RuntimeException("本が見つかりません: " + id));
             
-            // 既存の本の情報を更新
             book.setTitle(form.getTitle());
             book.setAuthor(form.getAuthor());
             book.setCategory(form.getCategory());
             book.setReadingStatus(Book.ReadingStatus.valueOf(form.getReadingStatus()));
             book.setCurrentPage(form.getCurrentPage());
             
-            // totalPagesの変換処理
             if ("不明".equals(form.getTotalPages())) {
                 book.setTotalPages(null);
             } else {
@@ -182,14 +211,13 @@ public class BookViewController {
                 }
             }
             
-            // 新しい表紙画像が選択された場合のみ更新
             if (form.getCoverImage() != null && !form.getCoverImage().isEmpty()) {
                 book.setCoverImage(form.getCoverImage());
             }
             
             book.setMemo(form.getMemo());
 
-            bookService.updateBook(id, book);
+            bookService.updateBook(id, book, userId);
             redirectAttributes.addFlashAttribute("message", "本を更新しました");
             redirectAttributes.addFlashAttribute("messageType", "success");
             return "redirect:/books/" + id;
@@ -201,9 +229,16 @@ public class BookViewController {
     }
    
     @PostMapping("/{id}/delete")
-    public String deleteBook(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String deleteBook(@PathVariable Long id, 
+                           RedirectAttributes redirectAttributes,
+                           HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
         try {
-            bookService.deleteBook(id);
+            bookService.deleteBook(id, userId);
             redirectAttributes.addFlashAttribute("message", "本を削除しました");
             redirectAttributes.addFlashAttribute("messageType", "success");
             return "redirect:/books";
@@ -219,9 +254,15 @@ public class BookViewController {
         @RequestParam(required = false, defaultValue = "") String title,
         @RequestParam(required = false, defaultValue = "") String author,
         @RequestParam(required = false, defaultValue = "") String category,
-        Model model
+        Model model,
+        HttpSession session
     ) {
-        List<Book> searchResults = bookService.searchBooks(title, author, category);
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
+        List<Book> searchResults = bookService.searchBooks(title, author, category, userId);
         model.addAttribute("books", searchResults);
         return "books/list";
     }

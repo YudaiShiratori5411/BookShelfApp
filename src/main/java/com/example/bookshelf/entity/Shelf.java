@@ -17,6 +17,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.PrePersist;
@@ -27,7 +28,10 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 @Entity
-@Table(name = "shelves")
+@Table(name = "shelves", indexes = {
+	    @Index(name = "idx_shelf_user", columnList = "user_id"),
+	    @Index(name = "idx_shelf_position", columnList = "position")
+	})
 @Data
 @EqualsAndHashCode(exclude = {"books", "dividers"})
 public class Shelf implements Sortable {
@@ -46,6 +50,9 @@ public class Shelf implements Sortable {
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+    
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @OneToMany(mappedBy = "shelf", fetch = FetchType.LAZY)
     @OrderBy("position ASC")

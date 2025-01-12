@@ -176,6 +176,8 @@
     </div>
 
     <th:block layout:fragment="scripts">
+        <script th:if="${!#lists.isEmpty(shelves)}" th:src="@{/js/image-upload.js}"></script>
+        <script th:if="${!#lists.isEmpty(shelves)}" th:src="@{/js/scanner/BookFormScanner.js}"></script>
         <script th:src="@{/js/bookshelf.js}"></script>
     </th:block>
 </div>

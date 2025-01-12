@@ -16,6 +16,7 @@ import lombok.ToString;
 @Data
 @Entity
 @Table(name = "dividers", indexes = {
+	    @Index(name = "idx_divider_user", columnList = "user_id"),
 	    @Index(name = "idx_divider_position", columnList = "position")
 	})
 @EqualsAndHashCode(exclude = "shelf")
@@ -26,14 +27,17 @@ public class Divider implements Sortable {
 
     @Column(nullable = false)
     private String label;
+    
+    @Column(name = "position", nullable = false)
+    private Integer position;
+    
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @ManyToOne
     @JoinColumn(name = "shelf_id", nullable = false)
     @ToString.Exclude
     private Shelf shelf;
-
-    @Column(name = "position", nullable = false)
-    private Integer position;
     
     @Override
     public Long getId() {

@@ -35,4 +35,7 @@ public class ReadingSession {
 
     @Column(name = "pages_read", nullable = false)
     private Integer pagesRead;
+
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 }

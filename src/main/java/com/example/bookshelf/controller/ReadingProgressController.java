@@ -27,130 +27,160 @@ import com.example.bookshelf.entity.ReadingSession;
 import com.example.bookshelf.service.BookService;
 import com.example.bookshelf.service.ReadingSessionService;
 
+import jakarta.servlet.http.HttpSession;
+
 @Controller
 @RequestMapping("/books/{bookId}/progress")
 public class ReadingProgressController {
 
-    @Autowired
-    private ReadingSessionService readingSessionService;
+   @Autowired
+   private ReadingSessionService readingSessionService;
 
-    @Autowired
-    private BookService bookService;
+   @Autowired
+   private BookService bookService;
 
-    // 進捗画面の表示
-    @GetMapping
-    public String showProgress(@PathVariable Long bookId,
-                             @RequestParam(defaultValue = "0") int page,
-                             Model model) {
-        // 1ページあたりの表示件数
-        final int PAGE_SIZE = 15;
+   // 進捗画面の表示
+   @GetMapping
+   public String showProgress(@PathVariable Long bookId,
+                            @RequestParam(defaultValue = "0") int page,
+                            Model model,
+                            HttpSession session) {
+       Long userId = (Long) session.getAttribute("userId");
+       if (userId == null) {
+           return "redirect:/login";
+       }
 
-        Book book = bookService.getBookById(bookId)
-                .orElseThrow(() -> new IllegalArgumentException("Book not found with id: " + bookId));
+       // 1ページあたりの表示件数
+       final int PAGE_SIZE = 15;
 
-        // ページネーション付きでセッションを取得
-        Page<ReadingSession> sessionPage = readingSessionService.getSessionsByBookPaged(book, page, PAGE_SIZE);
+       Book book = bookService.getBookById(bookId, userId)
+               .orElseThrow(() -> new IllegalArgumentException("Book not found with id: " + bookId));
 
-        // セッションデータのタイムゾーン調整
-        List<ReadingSession> adjustedSessions = sessionPage.getContent().stream()
-            .map(session -> {
-                ReadingSession adjustedSession = new ReadingSession();
-                adjustedSession.setId(session.getId());
-                adjustedSession.setBook(session.getBook());
-                
-                // 開始時間の調整（UTCからローカル時間に変換）
-                LocalDateTime localStartTime = session.getStartTime()
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime();
-                adjustedSession.setStartTime(localStartTime);
-                
-                // 終了時間の調整（UTCからローカル時間に変換）
-                LocalDateTime localEndTime = session.getEndTime()
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime();
-                adjustedSession.setEndTime(localEndTime);
-                
-                adjustedSession.setPagesRead(session.getPagesRead());
-                return adjustedSession;
-            })
-            .collect(Collectors.toList());
+       // ページネーション付きでセッションを取得
+       Page<ReadingSession> sessionPage = readingSessionService.getSessionsByBookPaged(book, page, PAGE_SIZE);
 
-        model.addAttribute("book", book);
-        model.addAttribute("sessions", adjustedSessions);
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", sessionPage.getTotalPages());
+       // セッションデータのタイムゾーン調整
+       List<ReadingSession> adjustedSessions = sessionPage.getContent().stream()
+           .map(readingSession -> {
+               ReadingSession adjustedSession = new ReadingSession();
+               adjustedSession.setId(readingSession.getId());
+               adjustedSession.setBook(readingSession.getBook());
+               
+               // 開始時間の調整（UTCからローカル時間に変換）
+               LocalDateTime localStartTime = readingSession.getStartTime()
+                   .atZone(ZoneId.systemDefault())
+                   .toLocalDateTime();
+               adjustedSession.setStartTime(localStartTime);
+               
+               // 終了時間の調整（UTCからローカル時間に変換）
+               LocalDateTime localEndTime = readingSession.getEndTime()
+                   .atZone(ZoneId.systemDefault())
+                   .toLocalDateTime();
+               adjustedSession.setEndTime(localEndTime);
+               
+               adjustedSession.setPagesRead(readingSession.getPagesRead());
+               return adjustedSession;
+           })
+           .collect(Collectors.toList());
 
-        // 平均ページ数を計算
-        double averagePages = readingSessionService.calculateAveragePagesPerDay(book);
-        model.addAttribute("averagePages", String.format("%.1f", averagePages));
+       model.addAttribute("book", book);
+       model.addAttribute("sessions", adjustedSessions);
+       model.addAttribute("currentPage", page);
+       model.addAttribute("totalPages", sessionPage.getTotalPages());
 
-        // 予測読了日を計算（タイムゾーン調整済みの日時を使用）
-        LocalDateTime predictedDate = readingSessionService.calculatePredictedFinishDate(book)
-                .atZone(ZoneOffset.UTC)
-                .withZoneSameInstant(ZoneId.systemDefault())
-                .toLocalDateTime();
-        model.addAttribute("predictedDate", predictedDate);
+       // 平均ページ数を計算
+       double averagePages = readingSessionService.calculateAveragePagesPerDay(book);
+       model.addAttribute("averagePages", String.format("%.1f", averagePages));
 
-        return "books/progress";
-    }
+       // 予測読了日を計算（タイムゾーン調整済みの日時を使用）
+       LocalDateTime predictedDate = readingSessionService.calculatePredictedFinishDate(book)
+               .atZone(ZoneOffset.UTC)
+               .withZoneSameInstant(ZoneId.systemDefault())
+               .toLocalDateTime();
+       model.addAttribute("predictedDate", predictedDate);
 
-    // 新しいセッションの記録
-    @PostMapping
-    public String recordSession(@PathVariable Long bookId,
-                              @RequestParam LocalDateTime startTime,
-                              @RequestParam LocalDateTime endTime,
-                              @RequestParam Integer pagesRead) {
-        // Optional<Book>を処理
-        Book book = bookService.getBookById(bookId)
-                .orElseThrow(() -> new IllegalArgumentException("Book not found with id: " + bookId));
+       return "books/progress";
+   }
 
-        ReadingSession session = new ReadingSession();
-        session.setBook(book);
-        session.setStartTime(startTime);
-        session.setEndTime(endTime);
-        session.setPagesRead(pagesRead);
+   // 新しいセッションの記録
+   @PostMapping
+   public String recordSession(@PathVariable Long bookId,
+                             @RequestParam LocalDateTime startTime,
+                             @RequestParam LocalDateTime endTime,
+                             @RequestParam Integer pagesRead,
+                             HttpSession session) {
+       Long userId = (Long) session.getAttribute("userId");
+       if (userId == null) {
+           return "redirect:/login";
+       }
 
-        readingSessionService.saveSession(session);
+       Book book = bookService.getBookById(bookId, userId)
+               .orElseThrow(() -> new IllegalArgumentException("Book not found with id: " + bookId));
 
-        return "redirect:/books/" + bookId + "/progress";
-    }
+       ReadingSession readingSession = new ReadingSession();
+       readingSession.setBook(book);
+       readingSession.setStartTime(startTime);
+       readingSession.setEndTime(endTime);
+       readingSession.setPagesRead(pagesRead);
 
-    // セッションの削除
-    @DeleteMapping("/sessions/{sessionId}")
-    public String deleteSession(@PathVariable Long bookId, 
-                              @PathVariable Long sessionId) {
-        readingSessionService.deleteSession(sessionId);
-        return "redirect:/books/" + bookId + "/progress";
-    }
+       readingSessionService.saveSession(readingSession);
 
-    // セッションの更新
-    @PutMapping("/sessions/{sessionId}")
-    public String updateSession(@PathVariable Long bookId,
-                              @PathVariable Long sessionId,
-                              @RequestParam LocalDateTime startTime,
-                              @RequestParam LocalDateTime endTime,
-                              @RequestParam Integer pagesRead) {
-        
-        ReadingSession session = new ReadingSession();
-        session.setId(sessionId);
-        session.setStartTime(startTime);
-        session.setEndTime(endTime);
-        session.setPagesRead(pagesRead);
-        
-        readingSessionService.updateSession(sessionId, session);
-        
-        return "redirect:/books/" + bookId + "/progress";
-    }
-    
-    @GetMapping("/sessions/{sessionId}")
-    @ResponseBody
-    public ResponseEntity<ReadingSession> getSession(@PathVariable Long bookId, 
-                                                   @PathVariable Long sessionId) {
-        ReadingSession session = readingSessionService.getSessionById(sessionId)
-                .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, 
-                    "Session not found with id: " + sessionId
-                ));
-        return ResponseEntity.ok(session);
-    }
+       return "redirect:/books/" + bookId + "/progress";
+   }
+
+   // セッションの削除
+   @DeleteMapping("/sessions/{sessionId}")
+   public String deleteSession(@PathVariable Long bookId, 
+                             @PathVariable Long sessionId,
+                             HttpSession session) {
+       Long userId = (Long) session.getAttribute("userId");
+       if (userId == null) {
+           return "redirect:/login";
+       }
+
+       readingSessionService.deleteSession(sessionId);
+       return "redirect:/books/" + bookId + "/progress";
+   }
+
+   // セッションの更新
+   @PutMapping("/sessions/{sessionId}")
+   public String updateSession(@PathVariable Long bookId,
+                             @PathVariable Long sessionId,
+                             @RequestParam LocalDateTime startTime,
+                             @RequestParam LocalDateTime endTime,
+                             @RequestParam Integer pagesRead,
+                             HttpSession session) {
+       Long userId = (Long) session.getAttribute("userId");
+       if (userId == null) {
+           return "redirect:/login";
+       }
+       
+       ReadingSession readingSession = new ReadingSession();
+       readingSession.setId(sessionId);
+       readingSession.setStartTime(startTime);
+       readingSession.setEndTime(endTime);
+       readingSession.setPagesRead(pagesRead);
+       
+       readingSessionService.updateSession(sessionId, readingSession);
+       
+       return "redirect:/books/" + bookId + "/progress";
+   }
+   
+   @GetMapping("/sessions/{sessionId}")
+   @ResponseBody
+   public ResponseEntity<ReadingSession> getSession(@PathVariable Long bookId, 
+                                                  @PathVariable Long sessionId,
+                                                  HttpSession session) {
+       Long userId = (Long) session.getAttribute("userId");
+       if (userId == null) {
+           return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+       }
+
+       ReadingSession readingSession = readingSessionService.getSessionById(sessionId)
+               .orElseThrow(() -> new ResponseStatusException(
+                   HttpStatus.NOT_FOUND, 
+                   "Session not found with id: " + sessionId
+               ));
+       return ResponseEntity.ok(readingSession);
+   }
 }
