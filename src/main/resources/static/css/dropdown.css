@@ -1,0 +1,162 @@
+/* モダンなドロップダウンメニューのスタイル */
+.modern-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.modern-dropdown-toggle {
+    background: none;
+    border: none;
+    color: white;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modern-dropdown-toggle:hover,
+.modern-dropdown-toggle:focus {
+    background-color: rgba(255, 255, 255, 0.1);
+    outline: none;
+}
+
+.modern-dropdown-toggle .menu-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.modern-dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: 100%;
+/*    min-width: 220px;*/
+    background: white;
+    border-radius: 8px;
+/*    padding: 8px 0;*/
+    margin-top: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s ease;
+    z-index: 1000;
+}
+.modern-dropdown-menu {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+    padding: 8px;
+}
+
+.modern-dropdown-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.modern-dropdown-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+/*    padding: 10px 16px;*/
+    border: none;
+    background: none;
+    color: #333;
+    font-size: 0.9rem;
+    text-align: left;
+    cursor: pointer;
+    transform: translateY(0);
+    transition: all 0.2s ease;
+}
+.modern-dropdown-item {
+    /* 各アイテムのスタイル調整 */
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.modern-dropdown-item:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+
+.modern-dropdown-item .item-icon {
+/*    margin-right: 12px;*/
+    opacity: 0.7;
+}
+.modern-dropdown-item .item-icon {
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
+/* メニュー項目のアイコンも同時に変化させる */
+.modern-dropdown-item:hover .item-icon {
+    opacity: 1;
+    transform: scale(1.05);
+    transition: all 0.2s ease;
+}
+
+.modern-dropdown-item span {
+    flex-grow: 1;
+}
+
+/* ドロップダウンメニューの表示アニメーション */
+@keyframes slideIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modern-dropdown-menu.show {
+    animation: slideIn 0.2s ease forwards;
+}
+
+/* アイコンのホバーエフェクト */
+.modern-dropdown-item:hover .item-icon {
+    opacity: 1;
+}
+
+/* メニュー項目間の区切り線 */
+.modern-dropdown-menu li:not(:last-child) {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.modern-dropdown-menu li::marker {
+    content: none;
+}
+
+/* 「本棚名を変更」を2列分の幅にする */
+.modern-dropdown-item.rename-shelf {
+    grid-column: 1 / -1; /* 両列にまたがるように */
+    justify-content: center;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    margin-top: 4px;
+    padding-top: 12px;
+}
+.modern-dropdown-item.customize-shelf {
+    display: flex;
+    align-items: center;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    margin-top: 4px;
+    padding-top: 12px;
+    white-space: nowrap;
+}
+
+.modern-dropdown-item.customize-shelf .item-icon {
+    margin-right: 12px;
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+}

@@ -11,75 +11,92 @@
             <img id="popupImage" th:src="@{/images/default-book-cover.svg}" alt="表紙画像">
         </div>
         <!-- 各本棚（カテゴリー） -->
-        <div th:each="shelf : ${shelves}" class="bookshelf">
+        <div th:each="shelf : ${shelves}" class="bookshelf" th:data-shelf-id="${shelf.id}">
             <div class="shelf-title">
                 <div class="shelf-name">
                     <span th:text="${shelf.name}">カテゴリー名</span>
                 </div>
                 <div class="shelf-controls">
                     <span class="book-count" th:text="|全${shelf.books.size()}冊|">全n冊</span>
-                    <!-- メニューボタン部分 -->
-                    <div class="dropdown">
-                        <button class="btn btn-link dropdown-toggle" 
+                    <div class="modern-dropdown">
+                        <button class="modern-dropdown-toggle" 
                                 type="button" 
                                 th:id="'shelf-menu-' + ${shelf.id}"
                                 data-bs-toggle="dropdown" 
                                 aria-expanded="false">
-                            <span class="text-white"></span>
+                            <svg class="menu-icon" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none">
+                                <circle cx="12" cy="12" r="1" />
+                                <circle cx="12" cy="5" r="1" />
+                                <circle cx="12" cy="19" r="1" />
+                            </svg>
                         </button>
-                        <ul class="dropdown-menu" th:attr="aria-labelledby='shelf-menu-' + ${shelf.id}">
+                        <ul class="modern-dropdown-menu" th:attr="aria-labelledby='shelf-menu-' + ${shelf.id}">
                             <li>
                                 <button type="button"
-                                        class="dropdown-item add-divider"
+                                        class="modern-dropdown-item add-divider"
                                         th:data-shelf-id="${shelf.id}">
-                                    仕切りを追加
+                                    <svg class="item-icon" viewBox="0 0 24 24" width="18" height="18">
+                                        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                    <span>仕切りを追加</span>
                                 </button>
                             </li>
                             <li>
                                 <button type="button"
-                                        class="dropdown-item delete-dividers-mode"
+                                        class="modern-dropdown-item delete-dividers-mode"
                                         th:data-shelf-id="${shelf.id}">
-                                    仕切りを削除
+                                    <svg class="item-icon" viewBox="0 0 24 24" width="18" height="18">
+                                        <path d="M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                    <span>仕切りを削除</span>
                                 </button>
                             </li>
                             <li>
                                 <button type="button"
-                                        class="dropdown-item add-shelf"
+                                        class="modern-dropdown-item add-shelf"
                                         th:data-shelf-id="${shelf.id}">
-                                    次の段に新段を追加
+                                    <svg class="item-icon" viewBox="0 0 24 24" width="18" height="18">
+                                        <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                        <path d="M12 3v18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                    <span>この下に段を追加</span>
                                 </button>
                             </li>
                             <li>
                                 <button type="button"
-                                        class="dropdown-item delete-shelf"
+                                        class="modern-dropdown-item delete-shelf"
                                         th:data-shelf-id="${shelf.id}">
-                                    この段を削除
+                                    <svg class="item-icon" viewBox="0 0 24 24" width="18" height="18">
+                                        <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                        <path d="M6 3l12 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                    <span>この段を削除</span>
                                 </button>
                             </li>
                             <li>
                                 <button type="button"
-                                        class="dropdown-item rename-shelf"
+                                        class="modern-dropdown-item rename-shelf"
                                         th:data-shelf-id="${shelf.id}"
                                         th:data-shelf-name="${shelf.name}">
-                                    本棚名を変更
+                                    <svg class="item-icon" viewBox="0 0 24 24" width="18" height="18">
+                                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" stroke="currentColor" stroke-width="2" fill="none"/>
+                                    </svg>
+                                    <span>本棚名を変更</span>
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button"
+                                        class="modern-dropdown-item customize-shelf"
+                                        th:data-shelf-id="${shelf.id}">
+                                    <svg class="item-icon" viewBox="0 0 24 24" width="18" height="18">
+                                        <path d="M12 3l1.5 3 3 1.5-3 1.5L12 12l-1.5-3L7.5 7.5l3-1.5L12 3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+                                    </svg>
+                                    <span>カスタマイズ</span>
                                 </button>
                             </li>
                         </ul>
-                        
-                        <!-- 仕切りのHTML-->
-                        <div th:if="${item instanceof T(com.example.bookshelf.entity.Divider)}"
-                             class="shelf-divider"
-                             th:data-divider-id="${item.id}"
-                             th:data-position="${item.position}"
-                             draggable="false">
-                            <span class="divider-label" th:text="${item.label}">仕切りラベル</span>
-                            <button type="button" 
-                                    class="delete-divider-btn"
-                                    style="display: none;"
-                                    th:data-divider-id="${item.id}">×</button>
-                        </div>
                     </div>
-                </div>   
+                </div>  
             </div>
 
             <div class="books-container" th:data-shelf-id="${shelf.id}">
@@ -144,8 +161,8 @@
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
                         <button type="button" class="btn btn-primary" id="saveShelf">追加</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
                     </div>
                 </div>
             </div>
@@ -167,8 +184,8 @@
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
                         <button type="button" class="btn btn-primary" id="saveRename">変更</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
                     </div>
                 </div>
             </div>
@@ -179,6 +196,7 @@
         <script th:if="${!#lists.isEmpty(shelves)}" th:src="@{/js/image-upload.js}"></script>
         <script th:if="${!#lists.isEmpty(shelves)}" th:src="@{/js/scanner/BookFormScanner.js}"></script>
         <script th:src="@{/js/bookshelf.js}"></script>
+        <script th:src="@{/js/dropdown.js}"></script>
     </th:block>
 </div>
 </body>

@@ -28,9 +28,24 @@ main {
         to bottom,
         #8b4513,
         #754321
-    );
+    ) !important;
     min-height: 250px;
     position: relative;
+    transition: background 0.3s ease;
+}
+.bookshelf.dark-mode {
+    background: linear-gradient(
+        to bottom,
+        #4a2511,
+        #2e1810
+    ) !important;
+}
+.bookshelf.cream-mode {
+    background: linear-gradient(
+        to bottom,
+        #f5e6d3,
+        #e6d5c1
+    ) !important;
 }
 
 .shelf-title {

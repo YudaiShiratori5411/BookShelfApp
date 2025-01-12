@@ -235,19 +235,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function toggleSortMode(container, button) {
     const allContainers = document.querySelectorAll('.books-container');
-    const isInSortMode = !container.classList.contains('sorting-mode');
+    const isInSortMode = container.classList.contains('sorting-mode');
 
     try {
-        if (isInSortMode) {
+        if (!isInSortMode) {
             // ソートモード開始
             allContainers.forEach(cont => {
                 cont.classList.add('sorting-mode');
                 enableDragAndDrop(cont);
             });
-            button.textContent = '順番入れ替えを完了';
-            button.classList.add('active');
+            if (button) {
+                button.textContent = '順番入れ替えを完了';
+                button.classList.add('active');
+            }
         } else {
-            // ソートモード終了時にスクロール位置を保存
+            // ソートモード終了処理
+            const savePromises = [];
+            
+            // 現在のスクロール位置を保存
             const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
             sessionStorage.setItem('scrollPosition', scrollPosition);
             
@@ -257,15 +262,32 @@ function toggleSortMode(container, button) {
                 sessionStorage.setItem('lastShelfId', activeShelfId);
             }
 
-            let success = true;
-            allContainers.forEach(async (cont) => {
-                const saveResult = await saveNewOrder(cont);
-                if (!saveResult) success = false;
+            // 各コンテナの順序を保存
+            allContainers.forEach(cont => {
+                savePromises.push(saveNewOrder(cont));
+                cont.classList.remove('sorting-mode');
+                disableDragAndDrop(cont);
             });
 
-            if (!success) {
-                alert('並び順の保存に失敗しました。もう一度お試しください。');
+            if (button) {
+                button.textContent = '順番入れ替え';
+                button.classList.remove('active');
             }
+
+            // すべての保存処理が完了してからリロード
+            Promise.all(savePromises)
+                .then(results => {
+                    const allSuccess = results.every(result => result === true);
+                    if (!allSuccess) {
+                        throw new Error('Some changes failed to save');
+                    }
+                    window.location.reload();
+                })
+                .catch(error => {
+                    console.error('Error in save process:', error);
+                    alert('並び順の保存に失敗しました。もう一度お試しください。');
+                    window.location.reload();
+                });
         }
     } catch (error) {
         console.error('Error in toggleSortMode:', error);
@@ -341,6 +363,10 @@ function disableDragAndDrop(container) {
 }
 
 function handleDragStart(e) {
+  
+    // イベントの即時伝播を停止
+    e.stopImmediatePropagation();
+    
     const item = e.target.closest('.book-card, .shelf-divider');
     if (!item || !item.classList.contains('sortable')) {
         e.preventDefault();
@@ -380,7 +406,7 @@ const SCROLL_THRESHOLD = 150; // スクロールを開始する画面端から�
 
 function handleDragOver(e) {
     e.preventDefault();
-    e.stopPropagation();
+    e.stopImmediatePropagation();
 
     const draggingItem = document.querySelector('.dragging');
     if (!draggingItem) return;
@@ -514,9 +540,17 @@ function handleDragEnd(e) {
 // 位置情報を更新する補助関数
 function updatePositions(container) {
     const items = Array.from(container.children);
+    const updates = [];
+    
     items.forEach((item, index) => {
-        item.setAttribute('data-position', index.toString());
+        const oldPosition = parseInt(item.getAttribute('data-position'));
+        if (oldPosition !== index) {
+            item.setAttribute('data-position', index.toString());
+            updates.push({ id: item.getAttribute('data-book-id') || item.getAttribute('data-divider-id'), position: index });
+        }
     });
+    
+    return updates;
 }
 
 // これらのイベントリスナーをドキュメントレベルで設定
@@ -533,34 +567,34 @@ function preventClick(e) {
 }
 
 async function saveNewOrder(container) {
-    const items = Array.from(container.querySelectorAll('.book-card, .shelf-divider'));
-    const shelfId = container.getAttribute('data-shelf-id');
-    const bookPositions = [];
-    const dividerPositions = [];
-
-    // 現在のスクロール位置を保存
-    const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
-    sessionStorage.setItem('scrollPosition', scrollPosition);
-    sessionStorage.setItem('lastShelfId', shelfId);
-
-    items.forEach((item, index) => {
-        const itemData = {
-            id: item.getAttribute(
-                item.classList.contains('book-card') ? 'data-book-id' : 'data-divider-id'
-            ),
-            position: index,
-            shelfId: shelfId
-        };
-
-        if (item.classList.contains('book-card')) {
-            bookPositions.push(itemData);
-        } else {
-            dividerPositions.push(itemData);
-        }
-    });
-
     try {
-        await Promise.all([
+        const items = Array.from(container.querySelectorAll('.book-card, .shelf-divider'));
+        const shelfId = container.getAttribute('data-shelf-id');
+        const bookPositions = [];
+        const dividerPositions = [];
+
+        items.forEach((item, index) => {
+            const itemData = {
+                id: item.getAttribute(
+                    item.classList.contains('book-card') ? 'data-book-id' : 'data-divider-id'
+                ),
+                position: index,
+                shelfId: shelfId
+            };
+
+            if (!itemData.id) {
+                throw new Error('Invalid item ID found');
+            }
+
+            if (item.classList.contains('book-card')) {
+                bookPositions.push(itemData);
+            } else {
+                dividerPositions.push(itemData);
+            }
+        });
+
+        // 両方のリクエストを並行して実行
+        const results = await Promise.allSettled([
             bookPositions.length > 0 ?
                 fetch('/api/reorder', {
                     method: 'POST',
@@ -588,14 +622,19 @@ async function saveNewOrder(container) {
                 }) : Promise.resolve()
         ]);
 
-        // リロード前の少し待機して保存を確実に
-        await new Promise(resolve => setTimeout(resolve, 100));
-        window.location.reload();
+        // エラーチェック
+        const errors = results
+            .filter(result => result.status === 'rejected')
+            .map(result => result.reason);
+
+        if (errors.length > 0) {
+            throw new Error('Failed to save some changes');
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 200));
         return true;
     } catch (error) {
-        console.error('Error saving order:', error);
-        alert('並び順の保存に失敗しました。ページをリロードします。');
-        window.location.reload();
+        console.error('Save order error:', error);
         return false;
     }
 }
@@ -964,6 +1003,46 @@ document.addEventListener('DOMContentLoaded', function() {
         currentShelfId = null;
     });
 });
-    
-    
-    
+
+
+
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Looking for customize buttons...');
+    const customizeButtons = document.querySelectorAll('.customize-shelf');
+    console.log('Found buttons:', customizeButtons.length);
+
+    customizeButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            console.log('Customize button clicked!');
+            e.preventDefault();
+            e.stopPropagation();
+
+            const shelfId = this.getAttribute('data-shelf-id');
+            console.log('Shelf ID:', shelfId);
+
+            const bookshelf = document.querySelector(`.bookshelf[data-shelf-id="${shelfId}"]`);
+            console.log('Found bookshelf:', bookshelf);
+
+            if (bookshelf) {
+                console.log('Before change - classList:', bookshelf.classList);
+                
+                // 現在の状態を確認して次の状態に移行
+                if (!bookshelf.classList.contains('dark-mode') && !bookshelf.classList.contains('cream-mode')) {
+                    // 通常→濃い茶色
+                    bookshelf.classList.add('dark-mode');
+                } else if (bookshelf.classList.contains('dark-mode')) {
+                    // 濃い茶色→クリーム色
+                    bookshelf.classList.remove('dark-mode');
+                    bookshelf.classList.add('cream-mode');
+                } else {
+                    // クリーム色→通常
+                    bookshelf.classList.remove('cream-mode');
+                }
+                
+                console.log('After change - classList:', bookshelf.classList);
+            }
+        });
+    });
+});
