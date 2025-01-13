@@ -1004,45 +1004,76 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-
-
-
-
+// カスタマイズ機能
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Looking for customize buttons...');
     const customizeButtons = document.querySelectorAll('.customize-shelf');
-    console.log('Found buttons:', customizeButtons.length);
+    
+    // ページ読み込み時に保存された状態を復元
+    restoreCustomization();
 
     customizeButtons.forEach(button => {
         button.addEventListener('click', function(e) {
-            console.log('Customize button clicked!');
             e.preventDefault();
             e.stopPropagation();
 
-            const shelfId = this.getAttribute('data-shelf-id');
-            console.log('Shelf ID:', shelfId);
+            const allBookshelves = document.querySelectorAll('.bookshelf');
+            const firstBookshelf = allBookshelves[0];
+            
+            if (allBookshelves.length > 0) {
+                let newMode = '';
 
-            const bookshelf = document.querySelector(`.bookshelf[data-shelf-id="${shelfId}"]`);
-            console.log('Found bookshelf:', bookshelf);
-
-            if (bookshelf) {
-                console.log('Before change - classList:', bookshelf.classList);
-                
-                // 現在の状態を確認して次の状態に移行
-                if (!bookshelf.classList.contains('dark-mode') && !bookshelf.classList.contains('cream-mode')) {
+                if (!firstBookshelf.classList.contains('dark-mode') && 
+                    !firstBookshelf.classList.contains('cream-mode')) {
                     // 通常→濃い茶色
-                    bookshelf.classList.add('dark-mode');
-                } else if (bookshelf.classList.contains('dark-mode')) {
+                    newMode = 'dark-mode';
+                    allBookshelves.forEach(shelf => {
+                        shelf.classList.add('dark-mode');
+                    });
+                } else if (firstBookshelf.classList.contains('dark-mode')) {
                     // 濃い茶色→クリーム色
-                    bookshelf.classList.remove('dark-mode');
-                    bookshelf.classList.add('cream-mode');
+                    newMode = 'cream-mode';
+                    allBookshelves.forEach(shelf => {
+                        shelf.classList.remove('dark-mode');
+                        shelf.classList.add('cream-mode');
+                    });
                 } else {
                     // クリーム色→通常
-                    bookshelf.classList.remove('cream-mode');
+                    newMode = '';
+                    allBookshelves.forEach(shelf => {
+                        shelf.classList.remove('cream-mode');
+                    });
                 }
-                
-                console.log('After change - classList:', bookshelf.classList);
+
+                // 現在の状態を保存
+                localStorage.setItem('bookshelfMode', newMode);
+            }
+
+            // ドロップダウンメニューを閉じる
+            const dropdownMenu = this.closest('.dropdown-menu');
+            if (dropdownMenu) {
+                const dropdown = bootstrap.Dropdown.getInstance(dropdownMenu.previousElementSibling);
+                if (dropdown) {
+                    dropdown.hide();
+                }
             }
         });
     });
 });
+
+// 保存された状態を復元する関数
+function restoreCustomization() {
+    const savedMode = localStorage.getItem('bookshelfMode');
+    if (savedMode) {
+        const allBookshelves = document.querySelectorAll('.bookshelf');
+        allBookshelves.forEach(shelf => {
+            // 一旦全てのモードをクリア
+            shelf.classList.remove('dark-mode', 'cream-mode');
+            // 保存されていたモードを適用
+            if (savedMode) {
+                shelf.classList.add(savedMode);
+            }
+        });
+    }
+}
+
+

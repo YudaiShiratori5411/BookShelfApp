@@ -1,0 +1,23 @@
+.reading-count {
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.count-btn {
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+
+.count-btn:hover {
+  background: #e0e0e0;
+}
+
+#readingCount {
+  min-width: 20px;
+  text-align: center;
+}

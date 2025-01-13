@@ -40,7 +40,7 @@ public class ReadingProgressService {
         session.setStartTime(startTime);
         session.setEndTime(endTime);
         session.setPagesRead(pagesRead);
-        session.setUserId(userId);  // セッションにもユーザーIDを設定
+        session.setUserId(userId);
 
         return sessionRepository.save(session);
     }

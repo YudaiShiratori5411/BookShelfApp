@@ -22,6 +22,15 @@
                             <div class="mb-4">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <h5 class="mb-0">読書進捗</h5>
+                                    
+                                    <div class="reading-count">
+                                      <span>現在</span>
+                                      <button class="count-btn decrease-count">-</button>
+                                      <span id="readingCount">1</span>
+                                      <button class="count-btn increase-count">+</button>
+                                      <span>周目</span>
+                                    </div>
+                                    
                                     <small class="text-muted" 
                                            th:with="currentPage=${book.currentPage != null ? book.currentPage : 0},
                                                    totalPages=${book.totalPages != null ? book.totalPages : 1},
