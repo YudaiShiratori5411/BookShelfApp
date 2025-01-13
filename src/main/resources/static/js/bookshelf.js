@@ -573,68 +573,98 @@ async function saveNewOrder(container) {
         const bookPositions = [];
         const dividerPositions = [];
 
+        // まず一時的な大きな値（オフセット）を使用して、重複を避ける
+        const TEMP_OFFSET = 10000;
+        
         items.forEach((item, index) => {
-            const itemData = {
-                id: item.getAttribute(
-                    item.classList.contains('book-card') ? 'data-book-id' : 'data-divider-id'
-                ),
-                position: index,
-                shelfId: shelfId
-            };
-
-            if (!itemData.id) {
-                throw new Error('Invalid item ID found');
-            }
-
+            const position = TEMP_OFFSET + index; // 一時的なポジション
+            const finalPosition = index; // 最終的なポジション
+            
             if (item.classList.contains('book-card')) {
-                bookPositions.push(itemData);
+                bookPositions.push({
+                    id: item.getAttribute('data-book-id'),
+                    position: finalPosition,
+                    shelfId: shelfId
+                });
             } else {
-                dividerPositions.push(itemData);
+                dividerPositions.push({
+                    id: item.getAttribute('data-divider-id'),
+                    position: finalPosition,
+                    shelfId: shelfId,
+                    tempPosition: position // 一時的なポジションを追加
+                });
             }
         });
 
-        // 両方のリクエストを並行して実行
-        const results = await Promise.allSettled([
-            bookPositions.length > 0 ?
-                fetch('/api/reorder', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Cache-Control': 'no-cache'
-                    },
-                    body: JSON.stringify({
-                        shelfId: shelfId,
-                        bookPositions: bookPositions
-                    })
-                }) : Promise.resolve(),
+        // まず仕切りを一時的な位置に移動
+        if (dividerPositions.length > 0) {
+            const tempMoveResponse = await fetch('/api/dividers/reorder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
+                },
+                body: JSON.stringify({
+                    shelfId: shelfId,
+                    dividerPositions: dividerPositions.map(dp => ({
+                        ...dp,
+                        position: dp.tempPosition
+                    }))
+                })
+            });
+            
+            if (!tempMoveResponse.ok) {
+                throw new Error('Failed to move dividers to temporary positions');
+            }
 
-            dividerPositions.length > 0 ?
-                fetch('/api/dividers/reorder', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Cache-Control': 'no-cache'
-                    },
-                    body: JSON.stringify({
-                        shelfId: shelfId,
-                        dividerPositions: dividerPositions
-                    })
-                }) : Promise.resolve()
-        ]);
-
-        // エラーチェック
-        const errors = results
-            .filter(result => result.status === 'rejected')
-            .map(result => result.reason);
-
-        if (errors.length > 0) {
-            throw new Error('Failed to save some changes');
+            // 少し待機して確実にDBに反映させる
+            await new Promise(resolve => setTimeout(resolve, 100));
         }
 
-        await new Promise(resolve => setTimeout(resolve, 200));
+        // 本の位置を更新
+        if (bookPositions.length > 0) {
+            const bookResponse = await fetch('/api/reorder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
+                },
+                body: JSON.stringify({
+                    shelfId: shelfId,
+                    bookPositions: bookPositions
+                })
+            });
+            
+            if (!bookResponse.ok) {
+                throw new Error('Failed to save book positions');
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
+        // 最後に仕切りを最終的な位置に移動
+        if (dividerPositions.length > 0) {
+            const finalMoveResponse = await fetch('/api/dividers/reorder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
+                },
+                body: JSON.stringify({
+                    shelfId: shelfId,
+                    dividerPositions: dividerPositions
+                })
+            });
+            
+            if (!finalMoveResponse.ok) {
+                throw new Error('Failed to move dividers to final positions');
+            }
+        }
+
         return true;
     } catch (error) {
         console.error('Save order error:', error);
+        alert(`並び順の保存に失敗しました: ${error.message}`);
         return false;
     }
 }

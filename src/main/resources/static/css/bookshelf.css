@@ -22,12 +22,12 @@ main {
 /* 本棚のスタイル */
 .bookshelf {
     width: 100%;
-    margin: 0;
+    margin: 0 0 -9px 0;
     padding: 0;
     background: linear-gradient(
         to bottom,
         #8b4513,
-        #754321
+        #603a1d
     ) !important;
     min-height: 250px;
     position: relative;
@@ -36,15 +36,15 @@ main {
 .bookshelf.dark-mode {
     background: linear-gradient(
         to bottom,
-        #4a2511,
-        #2e1810
+        #5a3017,
+        #4f2d24
     ) !important;
 }
 .bookshelf.cream-mode {
     background: linear-gradient(
         to bottom,
-        #f5e6d3,
-        #e6d5c1
+        #e2d3c0,
+        #d6c5b1
     ) !important;
 }
 
@@ -90,7 +90,7 @@ main {
 .books-container {
     display: flex;
     overflow-x: auto;
-    padding: 10px;
+    padding: 15px 10px 0px 10px;
     gap: 2px;
     scrollbar-width: none;  /* Firefoxのスクロールバーを非表示 */
 }
@@ -179,34 +179,44 @@ main {
     position: relative;
     transition: transform 0.2s ease-in-out;
     cursor: grab;
+    z-index: 1;
 }
 
-/* ドラッグ&ドロップ関連のスタイル */
+/* 本のカード内の全要素に対してイベントを確実に伝播させる */
+.book-card * {
+    pointer-events: auto;
+}
+
+/* 順番入れ替えモード時のスタイル */
 .books-container.sorting-mode {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 2px;
     background: rgba(255, 255, 255, 0.1);
     padding: 10px;
     border: 2px dashed rgba(255, 255, 255, 0.3);
     border-radius: 5px;
+    transition: all 0.3s ease;
+    min-height: 200px;
 }
 
 .books-container.sorting-mode .book-card {
+    transition: transform 0.2s ease;
     cursor: grab;
     transform: scale(0.98);
-    transition: all 0.3s ease;
 }
 
 .books-container.sorting-mode .book-card:hover {
     transform: scale(1);
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
 }
-/* ホバーエフェクト */
+
 .book-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     z-index: 10;
 }
 
-/* ドラッグ中のプレースホルダー */
 .drag-over {
     border: 2px dashed #666;
     background: rgba(255, 255, 255, 0.1);
@@ -215,12 +225,20 @@ main {
     visibility: visible;
 }
 
-/* ドラッグ中の要素のスタイル */
 .book-card.dragging {
     border: 2px dashed #666;
     z-index: 1000;
 }
-/* ドラッグ時のスタイル */
+.book-card.dragging,
+.shelf-divider.dragging {
+    opacity: 0.6;
+    cursor: grabbing;
+    position: relative;
+    z-index: 99;
+    transform: scale(1.05);
+    transition: transform 0.2s ease;
+}
+
 .book-link.dragging {
     height: 150px !important;
     opacity: 0.8;
@@ -235,7 +253,7 @@ main {
     border-left: 2px solid #007bff;
     border: 2px dashed #666;
 }
-/* ドラッグ中のゴースト（ブラウザデフォルトのドラッグ表示）を非表示 */
+
 .book-card:active {
     cursor: grabbing;
 }
@@ -277,7 +295,7 @@ main {
     left: 0;
     width: 100%;
     transition: height 0.3s ease;
-    opacity: 0.3;  /* 既存のデザインを邪魔しないように透明度を設定 */
+    opacity: 0.3;
 }
 
 /* 読書状態による色分け */
@@ -313,14 +331,12 @@ main {
     z-index: 1000;
 }
 
-
-
+.books-container.sorting {
+    cursor: move;
+}
 .books-container.sorting .book-card {
     cursor: move;
 }
-
-
-
 
 .mt-4 {
     display: flex;
@@ -372,99 +388,12 @@ main {
     font-size: 1.5em;
 }
 
-/* ドラッグ&ドロップ時のスタイル */
-.books-container.sorting {
-    cursor: move;
-}
-
-
-
-.menu-icon {
-    font-size: 1.5em;
-    line-height: 1;
-}
-
-.dropdown {
-    margin-left: auto;
-}
-
-.dropdown-menu {
-    position: absolute;
-    display: none;
-    background-color: white;
-    min-width: 120px;
-    padding: 0.5rem 0;
-    margin-top: 0.125rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-    border: 1px solid rgba(0,0,0,.15);
-    z-index: 1000;
-}
-
-.dropdown-menu.show {
-    display: block;
-    z-index: 99;
-}
-
-.dropdown-item {
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-}
-
-.dropdown-item:hover {
-    background-color: #f8f9fa;
-}
-
-
-/* ドロップダウンボタンの枠線を消す */
-.btn.dropdown-toggle:focus,
-.btn.dropdown-toggle:active {
-    box-shadow: none !important;
-    outline: none !important;
-    border: none !important;
-}
-
-/* ドロップダウンメニュー全体の枠線を消す */
-.dropdown-menu {
-    box-shadow: none !important;
-    outline: none !important;
-    border: none !important;
-    z-index: 10000;
-}
-
-/* ドロップダウンメニューの項目の枠線を消す */
-.dropdown-item:focus,
-.dropdown-item:active {
-    box-shadow: none !important;
-    outline: none !important;
-    border: none !important;
-}
-
-/* 順番入れ替えモード時のスタイル */
-.books-container.sorting-mode {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 10px;
-    border: 2px dashed rgba(255, 255, 255, 0.3);
-    border-radius: 5px;
-}
-
-.books-container.sorting-mode .book-card {
-    cursor: grab;
-    transform: scale(0.98);
-    transition: all 0.3s ease;
-}
-
-.books-container.sorting-mode .book-card:hover {
-    transform: scale(1);
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-}
-
 /* 順番入れ替えモード時のメニューボタンのスタイル */
 .sorting-active .shelf-menu-btn {
     background-color: rgba(255, 255, 255, 0.2);
     border-radius: 4px;
 }
 
-/* モード説明のスタイル */
 .sorting-mode-message {
     display: none;
     color: white;
@@ -479,11 +408,6 @@ main {
     display: block;
 }
 
-.custom-dropdown {
-    position: relative;
-    display: inline-block;
-}
-
 .menu-btn {
     background: none;
     border: none;
@@ -492,34 +416,6 @@ main {
     cursor: pointer;
     padding: 5px 10px;
 }
-
-.dropdown-content {
-    display: none;
-    position: absolute;
-    right: 0;
-    background-color: #f9f9f9;
-    min-width: 160px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-    z-index: 1000;
-    border-radius: 4px;
-}
-
-.dropdown-content.show {
-    display: block;
-}
-
-.dropdown-content a {
-    color: black;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-}
-
-.dropdown-content a:hover {
-    background-color: #f1f1f1;
-}
-
-
 
 /*進捗管理ページ関連*/
 .reading-progress {
@@ -545,14 +441,10 @@ main {
     border: 1px solid #dee2e6;
 }
 
-
-
-
 /* 本の登録ページの「カテゴリーを選択」がうまく表示されない */
 .form-select {
   padding: .375rem 2.25rem .375rem .60rem !important;
 }
-
 
 /*list.htmlのみに以下のCSSを適用*/
 /*navタグを固定*/
@@ -612,8 +504,6 @@ main {
     color: white;
 }
 
-
-
 /*ホバー時の表紙画像関連*/
 /* デフォルトの表紙画像がない場合のスタイル */
 .cover-image-popup.no-image {
@@ -658,21 +548,6 @@ main {
     transform: scale(1);
 }
 
-.book-spine {
-    position: relative;
-    z-index: 1;
-}
-
-.book-card {
-    position: relative;
-    z-index: 1;
-}
-
-/* 本のカード内の全要素に対してイベントを確実に伝播させる */
-.book-card * {
-    pointer-events: auto;
-}
-
 
 
 
@@ -683,11 +558,11 @@ main {
 }
 
 #clearImage {
-    border-radius: 0 0.375rem 0.375rem 0;  /* 右側の上下を丸く */
+    border-radius: 0 0.375rem 0.375rem 0;
 }
 
 #scanButton {
-    border-radius: 0.375rem;  /* 全ての角を丸く */
+    border-radius: 0.375rem;
 }
 
 /* input-groupの中での位置調整 */
@@ -697,11 +572,8 @@ main {
 
 /* file-input-customクラスの角を調整 */
 .file-input-custom {
-    border-radius: 0.375rem 0 0 0.375rem;  /* 左側の上下のみ丸く */
+    border-radius: 0.375rem 0 0 0.375rem;
 }
-
-
-
 
 /* ファイル入力フィールドのカスタマイズ */
 .file-input-custom {
@@ -847,54 +719,15 @@ main {
     }
 }
 
-/* ファイル選択のカスタマイズ */
-.file-input-custom {
-    max-width: 400px;
-}
-
-.file-input-custom::-webkit-file-upload-button {
-    min-width: 110px;
-}
-
-.file-input-custom::file-selector-button {
-    min-width: 110px;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-.book-card.dragging,
-.shelf-divider.dragging {
-    opacity: 0.6;
-    cursor: grabbing;
-    position: relative;
-    z-index: 99;
-    transform: scale(1.05);
-    transition: transform 0.2s ease;
-}
-
-.books-container.sorting-mode {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 2px;
-    padding: 10px;
-    min-height: 200px;
-    transition: background-color 0.3s ease;
-}
-
-.books-container.sorting-mode .book-card,
-.books-container.sorting-mode .shelf-divider {
-    transition: transform 0.2s ease;
-    cursor: grab;
-}
+/*.book-card.dragging,*/
+/*.shelf-divider.dragging {*/
+/*    opacity: 0.6;*/
+/*    cursor: grabbing;*/
+/*    position: relative;*/
+/*    z-index: 99;*/
+/*    transform: scale(1.05);*/
+/*    transition: transform 0.2s ease;*/
+/*}*/
 
 @keyframes highlightFade {
     0% { background-color: rgba(255, 255, 255, 0.1); }
@@ -910,23 +743,16 @@ html {
     scroll-behavior: smooth;
 }
 
-.books-container.sorting-mode {
-    min-height: 200px;
-    padding: 10px;
-    transition: all 0.3s ease;
-    border: 2px dashed transparent;
-}
-
 .books-container.sorting-mode:hover {
     border-color: rgba(255, 255, 255, 0.2);
 }
 
-.book-card.dragging,
-.shelf-divider.dragging {
-    opacity: 0.8;
-    transform: scale(1.02);
-    cursor: grabbing !important;
-}
+/*.book-card.dragging,*/
+/*.shelf-divider.dragging {*/
+/*    opacity: 0.8;*/
+/*    transform: scale(1.02);*/
+/*    cursor: grabbing !important;*/
+/*}*/
 
 .book-card.sortable:hover,
 .shelf-divider.sortable:hover {

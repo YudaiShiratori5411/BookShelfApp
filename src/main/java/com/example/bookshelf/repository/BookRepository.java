@@ -80,5 +80,11 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Modifying
     @Query("UPDATE Book b SET b.position = :position WHERE b.id = :id AND b.userId = :userId")
     void updateBookPositionForUser(@Param("id") Long id, @Param("position") Integer position, @Param("userId") Long userId);
+    
+    @Query("SELECT b FROM Book b WHERE b.shelf.id = :shelfId AND b.userId = :userId ORDER BY b.position ASC")
+    List<Book> findAllByShelf_IdAndUserIdOrderByPositionAsc(
+        @Param("shelfId") Long shelfId, 
+        @Param("userId") Long userId
+    );
 }
 
