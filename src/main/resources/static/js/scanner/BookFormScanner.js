@@ -164,79 +164,99 @@ document.addEventListener('DOMContentLoaded', function() {
     // バーコードスキャン開始
     async function startScanning() {
         console.log('Starting scan process');
-
+    
         try {
+                    
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error('お使いのブラウザはカメラ機能をサポートしていません。\nSafariの場合は設定からカメラへのアクセスを許可してください。');
+            }
+            
             console.log('Requesting camera access');
-            const stream = await navigator.mediaDevices.getUserMedia({
+            const constraints = {
                 video: {
-                    facingMode: 'environment',
+                    facingMode: { exact: "environment" },
                     width: { ideal: 1280 },
                     height: { ideal: 720 }
                 }
-            });
-            console.log('Camera access granted');
-
-            const video = document.createElement('video');
-            video.srcObject = stream;
-            video.style.width = '100%';
-            video.style.height = '100%';
-            video.style.objectFit = 'cover';
-            await video.play();
-            console.log('Video element playing');
-
-            modalElement = createElementFromHTML(`
-                <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">バーコードスキャン</h5>
-                                <button type="button" class="btn-close"></button>
+            };
+    
+            if (navigator.mediaDevices.getUserMedia) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    await handleSuccess(stream);
+                } catch (error) {
+                    console.log('Retrying with relaxed constraints');
+                    constraints.video.facingMode = "environment";
+                    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    await handleSuccess(stream);
+                }
+            } else {
+                throw new Error('getUserMedia not supported');
+            }
+        } catch (err) {
+            console.error('Camera error:', err);
+            alert('カメラの起動に失敗しました: ' + err.message);
+        }
+    }
+    
+    async function handleSuccess(stream) {
+        console.log('Camera access granted');
+    
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        video.style.width = '100%';
+        video.style.height = '100%';
+        video.style.objectFit = 'cover';
+        video.setAttribute('playsinline', 'true');
+        video.setAttribute('autoplay', 'true');
+        await video.play();
+        console.log('Video element playing');
+    
+        modalElement = createElementFromHTML(`
+            <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">バーコードスキャン</h5>
+                            <button type="button" class="btn-close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div id="scanner-container" style="width: 100%; height: 300px; position: relative; overflow: hidden;">
+                                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; border: 2px solid red; pointer-events: none;"></div>
                             </div>
-                            <div class="modal-body">
-                                <div id="scanner-container" style="width: 100%; height: 300px; position: relative; overflow: hidden;">
-                                    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; border: 2px solid red; pointer-events: none;"></div>
-                                </div>
-                                <div class="text-center mt-2">
-                                    <small class="text-muted">バーコードをスキャン範囲内に合わせてください</small>
-                                </div>
+                            <div class="text-center mt-2">
+                                <small class="text-muted">バーコードをスキャン範囲内に合わせてください</small>
                             </div>
                         </div>
                     </div>
                 </div>
-            `);
-
-            document.body.appendChild(modalElement);
-            const scannerContainer = modalElement.querySelector('#scanner-container');
-            scannerContainer.appendChild(video);
-            
-            // ZXingの初期化
-            codeReader = new ZXing.BrowserMultiFormatReader();
-            
-            // スキャン開始
-            try {
-                const result = await codeReader.decodeFromVideoDevice(null, video, (result, err) => {
-                    if (result) {
-                        console.log('Barcode detected:', result.text);
-                        stopScanning();
-                        fetchBookInfo(result.text);
-                    }
-                    if (err && !(err instanceof ZXing.NotFoundException)) {
-                        console.error('Scan error:', err);
-                    }
-                });
-            } catch (error) {
-                console.error('Scanning error:', error);
-                alert('スキャンに失敗しました');
-                stopScanning();
-            }
-
-            // モーダルを閉じるボタンのイベントリスナー
-            modalElement.querySelector('.btn-close').addEventListener('click', stopScanning);
-
-        } catch (err) {
-            console.error('Camera error:', err);
-            alert('カメラの起動に失敗しました');
+            </div>
+        `);
+    
+        document.body.appendChild(modalElement);
+        const scannerContainer = modalElement.querySelector('#scanner-container');
+        scannerContainer.appendChild(video);
+        
+        codeReader = new ZXing.BrowserMultiFormatReader();
+        
+        try {
+            await codeReader.decodeFromVideoDevice(null, video, (result, err) => {
+                if (result) {
+                    console.log('Barcode detected:', result.text);
+                    stopScanning();
+                    fetchBookInfo(result.text);
+                }
+                if (err && !(err instanceof ZXing.NotFoundException)) {
+                    console.error('Scan error:', err);
+                }
+            });
+        } catch (error) {
+            console.error('Scanning error:', error);
+            alert('スキャンに失敗しました');
+            stopScanning();
         }
+    
+        modalElement.querySelector('.btn-close').addEventListener('click', stopScanning);
     }
 
     // スキャン停止処理

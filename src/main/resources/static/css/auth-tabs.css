@@ -38,3 +38,30 @@
 .nav-tabs .nav-link.active[data-bs-target="#register-pane"] i {
     color: #28a745;
 }
+
+
+
+@media screen and (max-width: 1024px) {
+    .nav-tabs .nav-link.active[data-bs-target="#login-pane"],
+    .nav-tabs .nav-link.active[data-bs-target="#register-pane"] {
+        font-size: 1rem;
+        padding: 0.75rem 1rem;
+    }
+
+    .nav-tabs .nav-link {
+        padding: 0.75rem 1rem;
+        min-height: 44px;
+    }
+}
+
+@media screen and (max-width: 767px) {
+    .nav-tabs .nav-link.active[data-bs-target="#login-pane"],
+    .nav-tabs .nav-link.active[data-bs-target="#register-pane"] {
+        font-size: 0.9rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .nav-tabs .nav-link i {
+        font-size: 0.9em;
+    }
+}

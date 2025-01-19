@@ -129,7 +129,7 @@
 }
 
 /* メニュー項目間の区切り線 */
-.modern-dropdown-menu li:not(:last-child) {
+.modern-dropdown-menu li {
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
@@ -141,16 +141,10 @@
 .modern-dropdown-item.rename-shelf {
     grid-column: 1 / -1; /* 両列にまたがるように */
     justify-content: center;
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
-    margin-top: 4px;
-    padding-top: 12px;
 }
 .modern-dropdown-item.customize-shelf {
     display: flex;
     align-items: center;
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
-    margin-top: 4px;
-    padding-top: 12px;
     white-space: nowrap;
 }
 

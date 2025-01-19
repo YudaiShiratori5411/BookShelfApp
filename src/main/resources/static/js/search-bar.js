@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
         div.innerHTML = `
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title">${escapeHtml(book.title)}</h5>
+                    <h4 class="card-title">${escapeHtml(book.title)}</h4>
                     <div class="book-info">
                         <p class="card-text mb-1">
                             <small class="text-muted">著者: ${escapeHtml(book.author || '不明')}</small>

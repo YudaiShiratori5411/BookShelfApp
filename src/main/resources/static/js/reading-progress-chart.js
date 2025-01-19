@@ -1,20 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
-   // グローバルスコープのsessionsを使用
    if (typeof sessions === 'undefined') {
        console.error('セッションデータが見つかりません');
        return;  
    }
 
-   // グローバル変数としてチャートインスタンスを保持
    let dailyChart = null;
    let cumulativeChart = null;
 
-   // データを期間ごとに集計する関数
    const aggregateData = (sessions, period) => {
        const data = {};
        
        sessions.forEach(session => {
-           // タイムゾーンを考慮した日付処理
            const date = new Date(session.startTime); 
            const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
            let key;
@@ -42,9 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
        return data;
    };
 
-   // 日別の読書ページ数グラフ
    const drawDailyProgressChart = (sessions, period) => {
        const dailyData = aggregateData(sessions, period);
+       const maxValue = Math.max(...Object.values(dailyData), 0);
        
        const ctx = document.getElementById('dailyProgressChart');
        if (!ctx) {
@@ -52,7 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
            return;
        }
 
-       // 既存のチャートがあれば破棄
        if (dailyChart) {
            dailyChart.destroy();
        }
@@ -71,6 +66,8 @@ document.addEventListener('DOMContentLoaded', () => {
            },
            options: {
                responsive: true,
+               maintainAspectRatio: false,
+               aspectRatio: 1,
                scales: {
                    x: {
                        offset: true,
@@ -88,6 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
                    },
                    y: {
                        beginAtZero: true,
+                       suggestedMax: maxValue + 10,
                        title: {
                            display: true,
                            text: 'ページ数'
@@ -103,14 +101,15 @@ document.addEventListener('DOMContentLoaded', () => {
                layout: {
                    padding: {
                        left: 10,
-                       right: 10
+                       right: 10,
+                       top: 20,
+                       bottom: 20
                    }
                }
            }
        });
    };
 
-   // 累積読書ページ数グラフ
    const drawCumulativeProgressChart = (sessions, period) => {
        let cumulative = 0;
        const cumulativeData = Object.entries(aggregateData(sessions, period))
@@ -120,13 +119,14 @@ document.addEventListener('DOMContentLoaded', () => {
                return { date, total: cumulative };
            });
 
+       const maxCumulativeValue = Math.max(...cumulativeData.map(d => d.total), 0);
+
        const ctx = document.getElementById('cumulativeProgressChart');
        if (!ctx) {
            console.error('累積グラフ用のcanvas要素が見つかりません');
            return;
        }
 
-       // 既存のチャートがあれば破棄
        if (cumulativeChart) {
            cumulativeChart.destroy();
        }
@@ -145,6 +145,8 @@ document.addEventListener('DOMContentLoaded', () => {
            },
            options: {
                responsive: true,
+               maintainAspectRatio: false,
+               aspectRatio: 1,
                scales: {
                    x: {
                        offset: true,
@@ -162,6 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
                    },
                    y: {
                        beginAtZero: true,
+                       suggestedMax: maxCumulativeValue + 50,
                        title: {
                            display: true,
                            text: '累積ページ数'
@@ -177,19 +180,19 @@ document.addEventListener('DOMContentLoaded', () => {
                layout: {
                    padding: {
                        left: 10,
-                       right: 10
+                       right: 10,
+                       top: 20,
+                       bottom: 20
                    }
                }
            }
        });
    };
 
-   // 期間選択ボタンのイベント処理
    const periodButtons = document.querySelectorAll('[data-period]');
    
    periodButtons.forEach(button => {
        button.addEventListener('click', function() {
-           // アクティブなボタンのスタイルを更新
            periodButtons.forEach(btn => {
                btn.classList.remove('active');
                btn.classList.remove('btn-primary');
@@ -199,14 +202,12 @@ document.addEventListener('DOMContentLoaded', () => {
            this.classList.remove('btn-outline-primary');
            this.classList.add('btn-primary');
 
-           // 選択された期間でグラフを更新
            const period = this.dataset.period;
            drawDailyProgressChart(sessions, period);
            drawCumulativeProgressChart(sessions, period);
        });
    });
 
-   // 初期表示
    drawDailyProgressChart(sessions, 'daily');
    drawCumulativeProgressChart(sessions, 'daily');
 });

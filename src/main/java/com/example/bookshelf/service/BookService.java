@@ -183,29 +183,46 @@ public class BookService {
         Shelf shelf = shelfRepository.findByIdAndUserId(shelfIdLong, userId)
             .orElseThrow(() -> new IllegalArgumentException("Shelf not found: " + shelfId));
 
-        // 一時的な位置を使用（競合を避けるため）
-        int offset = 10000;
-        positions.forEach(pos -> {
-            Long bookId = Long.parseLong(pos.getId());
-            Book book = bookRepository.findByIdAndUserId(bookId, userId)
-                .orElseThrow(() -> new IllegalArgumentException("Book not found: " + bookId));
+        try {
+            // 一時的な位置を使用（競合を避けるため）
+            int offset = 10000;
             
-            // 本棚が変更された場合は更新
-            if (!book.getShelf().getId().equals(shelfIdLong)) {
-                book.setShelf(shelf);
+            // まず全ての本を一時的な位置に移動
+            for (ReorderBooksRequest.BookPosition pos : positions) {
+                Long bookId = Long.parseLong(pos.getId());
+                Book book = bookRepository.findByIdAndUserId(bookId, userId)
+                    .orElseThrow(() -> new IllegalArgumentException("Book not found: " + bookId));
+                
+                // 本棚が変更された場合は更新
+                if (!book.getShelf().getId().equals(shelfIdLong)) {
+                    book.setShelf(shelf);
+                }
+                
+                book.setPosition(offset + pos.getPosition());
+                bookRepository.save(book);
             }
-            book.setPosition(offset + pos.getPosition());
-            bookRepository.save(book);
-        });
-        bookRepository.flush();
+            bookRepository.flush();
 
-        // 最終的な位置に更新
-        positions.forEach(pos -> {
-            Long bookId = Long.parseLong(pos.getId());
-            bookRepository.updatePositionForUser(bookId, pos.getPosition(), userId);
-        });
-        
-        bookRepository.flush();
+            // 少し待機して確実にDBに反映させる
+            Thread.sleep(100);
+
+            // 最終的な位置に更新
+            for (ReorderBooksRequest.BookPosition pos : positions) {
+                Long bookId = Long.parseLong(pos.getId());
+                Book book = bookRepository.findByIdAndUserId(bookId, userId)
+                    .orElseThrow(() -> new IllegalArgumentException("Book not found: " + bookId));
+                
+                book.setPosition(pos.getPosition());
+                bookRepository.save(book);
+            }
+            bookRepository.flush();
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Reordering was interrupted", e);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to reorder books", e);
+        }
     }
 }
 

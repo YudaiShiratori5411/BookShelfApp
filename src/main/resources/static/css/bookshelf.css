@@ -719,16 +719,6 @@ main {
     }
 }
 
-/*.book-card.dragging,*/
-/*.shelf-divider.dragging {*/
-/*    opacity: 0.6;*/
-/*    cursor: grabbing;*/
-/*    position: relative;*/
-/*    z-index: 99;*/
-/*    transform: scale(1.05);*/
-/*    transition: transform 0.2s ease;*/
-/*}*/
-
 @keyframes highlightFade {
     0% { background-color: rgba(255, 255, 255, 0.1); }
     100% { background-color: transparent; }
@@ -747,15 +737,9 @@ html {
     border-color: rgba(255, 255, 255, 0.2);
 }
 
-/*.book-card.dragging,*/
-/*.shelf-divider.dragging {*/
-/*    opacity: 0.8;*/
-/*    transform: scale(1.02);*/
-/*    cursor: grabbing !important;*/
-/*}*/
-
 .book-card.sortable:hover,
 .shelf-divider.sortable:hover {
     cursor: grab;
     transform: translateY(-2px);
 }
+

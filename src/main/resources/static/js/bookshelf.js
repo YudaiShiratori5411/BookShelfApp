@@ -1,3 +1,6 @@
+let isDragging = false;
+let draggedItem = null;
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Script loaded');
 
@@ -242,6 +245,21 @@ function toggleSortMode(container, button) {
             // ソートモード開始
             allContainers.forEach(cont => {
                 cont.classList.add('sorting-mode');
+                // 本のリンクを無効化
+                const bookLinks = cont.querySelectorAll('.book-link');
+                bookLinks.forEach(link => {
+                    // href属性を一時的に保存して削除
+                    link.dataset.originalHref = link.getAttribute('href');
+                    link.removeAttribute('href');
+                    // クリックイベントを無効化
+                    link.style.pointerEvents = 'none';
+                    // クリックイベントをキャンセル
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return false;
+                    }, true);
+                });
                 enableDragAndDrop(cont);
             });
             if (button) {
@@ -266,6 +284,17 @@ function toggleSortMode(container, button) {
             allContainers.forEach(cont => {
                 savePromises.push(saveNewOrder(cont));
                 cont.classList.remove('sorting-mode');
+                // 本のリンクを再有効化
+                const bookLinks = cont.querySelectorAll('.book-link');
+                bookLinks.forEach(link => {
+                    // 保存していたhref属性を復元
+                    if (link.dataset.originalHref) {
+                        link.setAttribute('href', link.dataset.originalHref);
+                        delete link.dataset.originalHref;
+                    }
+                    // クリックイベントを再有効化
+                    link.style.pointerEvents = 'auto';
+                });
                 disableDragAndDrop(cont);
             });
 
@@ -336,10 +365,11 @@ function enableDragAndDrop(container) {
         item.addEventListener('dragover', handleDragOver);
         item.addEventListener('drop', handleDrop);
         
-        // クリックイベントを防止
+        // クリックイベントを完全に無効化
         const link = item.querySelector('.book-link');
         if (link) {
-            link.addEventListener('click', preventClick);
+            link.style.pointerEvents = 'none';
+            item.style.pointerEvents = 'all';
         }
     });
 }
@@ -348,23 +378,23 @@ function disableDragAndDrop(container) {
     const items = container.querySelectorAll('.book-card, .shelf-divider');
     items.forEach(item => {
         item.setAttribute('draggable', false);
-        item.classList.remove('sortable');  // sortableクラスを削除
+        item.classList.remove('sortable');
         
         item.removeEventListener('dragstart', handleDragStart);
         item.removeEventListener('dragend', handleDragEnd);
         item.removeEventListener('dragover', handleDragOver);
         item.removeEventListener('drop', handleDrop);
         
+        // クリックイベントを再度有効化
         const link = item.querySelector('.book-link');
         if (link) {
-            link.removeEventListener('click', preventClick);
+            link.style.pointerEvents = 'all';
+            item.style.pointerEvents = 'all';
         }
     });
 }
 
 function handleDragStart(e) {
-  
-    // イベントの即時伝播を停止
     e.stopImmediatePropagation();
     
     const item = e.target.closest('.book-card, .shelf-divider');
@@ -374,9 +404,32 @@ function handleDragStart(e) {
     }
 
     isDragging = true;
+
+    // ドラッグ中の要素の構造を一時的に単純化
+    if (item.classList.contains('book-card')) {
+        // 元のHTML構造を保存
+        item.dataset.originalHtml = item.innerHTML;
+        
+        // シンプルな構造に置き換え
+        const title = item.querySelector('.book-title').textContent;
+        item.innerHTML = `
+            <div style="
+                height: 100%;
+                width: 100%;
+                background: white !important;
+                display: flex;
+                align-items: center;
+                writing-mode: vertical-rl;
+                padding: 5px 2px;
+                font-size: 0.8em;
+            ">${title}</div>
+        `;
+    }
+    
     item.classList.add('dragging');
     
     try {
+        // 既存のドラッグデータ処理...
         const container = item.closest('.books-container');
         const itemData = {
             type: item.classList.contains('book-card') ? 'book' : 'divider',
@@ -385,7 +438,6 @@ function handleDragStart(e) {
             originalPosition: item.getAttribute('data-position')
         };
 
-        // データが正しく設定されていることを確認
         if (!itemData.id || !itemData.originalShelfId) {
             throw new Error('Required drag data missing');
         }
@@ -497,6 +549,12 @@ function handleDragEnd(e) {
         scrollInterval = null;
     }
 
+    // 元のHTML構造を復元
+    if (item.classList.contains('book-card') && item.dataset.originalHtml) {
+        item.innerHTML = item.dataset.originalHtml;
+        delete item.dataset.originalHtml;
+    }
+
     item.classList.remove('dragging');
     
     const newContainer = item.closest('.books-container');
@@ -573,57 +631,26 @@ async function saveNewOrder(container) {
         const bookPositions = [];
         const dividerPositions = [];
 
-        // まず一時的な大きな値（オフセット）を使用して、重複を避ける
-        const TEMP_OFFSET = 10000;
-        
+        // ポジションの計算を一度だけ行う
         items.forEach((item, index) => {
-            const position = TEMP_OFFSET + index; // 一時的なポジション
-            const finalPosition = index; // 最終的なポジション
-            
             if (item.classList.contains('book-card')) {
                 bookPositions.push({
                     id: item.getAttribute('data-book-id'),
-                    position: finalPosition,
+                    position: index,
                     shelfId: shelfId
                 });
             } else {
                 dividerPositions.push({
                     id: item.getAttribute('data-divider-id'),
-                    position: finalPosition,
-                    shelfId: shelfId,
-                    tempPosition: position // 一時的なポジションを追加
+                    position: index,
+                    shelfId: shelfId
                 });
             }
         });
 
-        // まず仕切りを一時的な位置に移動
-        if (dividerPositions.length > 0) {
-            const tempMoveResponse = await fetch('/api/dividers/reorder', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Cache-Control': 'no-cache'
-                },
-                body: JSON.stringify({
-                    shelfId: shelfId,
-                    dividerPositions: dividerPositions.map(dp => ({
-                        ...dp,
-                        position: dp.tempPosition
-                    }))
-                })
-            });
-            
-            if (!tempMoveResponse.ok) {
-                throw new Error('Failed to move dividers to temporary positions');
-            }
-
-            // 少し待機して確実にDBに反映させる
-            await new Promise(resolve => setTimeout(resolve, 100));
-        }
-
-        // 本の位置を更新
-        if (bookPositions.length > 0) {
-            const bookResponse = await fetch('/api/reorder', {
+        // 本と仕切りの位置を同時に更新
+        const [bookResponse, dividerResponse] = await Promise.all([
+            bookPositions.length > 0 ? fetch('/api/reorder', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -633,18 +660,9 @@ async function saveNewOrder(container) {
                     shelfId: shelfId,
                     bookPositions: bookPositions
                 })
-            });
+            }) : Promise.resolve(),
             
-            if (!bookResponse.ok) {
-                throw new Error('Failed to save book positions');
-            }
-
-            await new Promise(resolve => setTimeout(resolve, 100));
-        }
-
-        // 最後に仕切りを最終的な位置に移動
-        if (dividerPositions.length > 0) {
-            const finalMoveResponse = await fetch('/api/dividers/reorder', {
+            dividerPositions.length > 0 ? fetch('/api/dividers/reorder', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -654,17 +672,23 @@ async function saveNewOrder(container) {
                     shelfId: shelfId,
                     dividerPositions: dividerPositions
                 })
-            });
-            
-            if (!finalMoveResponse.ok) {
-                throw new Error('Failed to move dividers to final positions');
-            }
+            }) : Promise.resolve()
+        ]);
+
+        // レスポンスの確認
+        if ((bookPositions.length > 0 && !bookResponse.ok) || 
+            (dividerPositions.length > 0 && !dividerResponse.ok)) {
+            throw new Error('Failed to save positions');
         }
 
         return true;
+
     } catch (error) {
         console.error('Save order error:', error);
-        alert(`並び順の保存に失敗しました: ${error.message}`);
+        
+        // エラー発生時は現在のページをリロード
+        window.location.reload();
+        
         return false;
     }
 }
@@ -1105,5 +1129,68 @@ function restoreCustomization() {
         });
     }
 }
+
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    // タブの切り替えイベントをリッスン
+    const tabElements = document.querySelectorAll('button[data-bs-toggle="tab"]');
+    
+    tabElements.forEach(tab => {
+        tab.addEventListener('shown.bs.tab', function (event) {
+            const container = document.querySelector('.container.mt-5');
+            if (event.target.id === 'login-tab') {
+                container.style.minHeight = '120vh';
+            } else if (event.target.id === 'register-tab') {
+                container.style.minHeight = '150vh';
+            }
+        });
+    });
+
+    // 初期状態の設定
+    const container = document.querySelector('.container.mt-5');
+    if (document.querySelector('#login-tab').classList.contains('active')) {
+        container.style.minHeight = '120vh';
+    }
+});
+
+
+
+
+
+
+function startDragging(item) {
+    isDragging = true;
+    item.classList.add('dragging');
+
+    // Swipe Navigation防止用のレイヤーを追加
+    const swipeDisabler = document.createElement('div');
+    swipeDisabler.className = 'swipe-disable-layer';
+    document.body.appendChild(swipeDisabler);
+
+    // スタイルを追加
+    swipeDisabler.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 999;
+        background: transparent;
+        touch-action: none;
+    `;
+}
+
+function stopDragging(item) {
+    isDragging = false;
+    item.classList.remove('dragging');
+
+    // Swipe Navigation防止用のレイヤーを削除
+    const swipeDisabler = document.querySelector('.swipe-disable-layer');
+    if (swipeDisabler) {
+        swipeDisabler.remove();
+    }
+}
+
 
 

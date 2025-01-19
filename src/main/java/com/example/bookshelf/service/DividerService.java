@@ -85,30 +85,43 @@ public class DividerService {
         Long shelfIdLong = Long.parseLong(shelfId);
         Shelf shelf = shelfRepository.findByIdAndUserId(shelfIdLong, userId)
             .orElseThrow(() -> new IllegalArgumentException("Shelf not found: " + shelfId));
-        
-        // 一時的な位置を使用
-        int offset = 10000;
-        positions.forEach(pos -> {
-            Long dividerId = Long.parseLong(pos.getId());
-            Divider divider = dividerRepository.findByIdAndUserId(dividerId, userId)
-                .orElseThrow(() -> new IllegalArgumentException("Divider not found: " + dividerId));
-            
-            // 本棚が変更された場合は更新
-            if (!divider.getShelf().getId().equals(shelfIdLong)) {
-                divider.setShelf(shelf);
-            }
-            divider.setPosition(offset + pos.getPosition());
-            dividerRepository.save(divider);
-        });
-        dividerRepository.flush();
 
-        // 最終的な位置に更新
-        positions.forEach(pos -> {
-            Long dividerId = Long.parseLong(pos.getId());
-            dividerRepository.updatePositionForUser(dividerId, pos.getPosition(), userId);
-        });
-        
-        dividerRepository.flush();
+        try {
+            // 一時的な位置を使用（競合を避けるため）
+            int offset = 10000;
+            
+            // まず全ての仕切りを一時的な位置に移動
+            for (ReorderDividersRequest.DividerPosition pos : positions) {
+                Long dividerId = Long.parseLong(pos.getId());
+                Divider divider = dividerRepository.findByIdAndUserId(dividerId, userId)
+                    .orElseThrow(() -> new IllegalArgumentException("Divider not found: " + dividerId));
+                
+                // 本棚が変更された場合は更新
+                if (!divider.getShelf().getId().equals(shelfIdLong)) {
+                    divider.setShelf(shelf);
+                }
+                
+                divider.setPosition(offset + pos.getPosition());
+                dividerRepository.save(divider);
+            }
+            dividerRepository.flush();
+
+            // 少し待機して確実にDBに反映させる
+            Thread.sleep(100);
+
+            // 最終的な位置に更新
+            for (ReorderDividersRequest.DividerPosition pos : positions) {
+                Long dividerId = Long.parseLong(pos.getId());
+                dividerRepository.updatePositionForUser(dividerId, pos.getPosition(), userId);
+            }
+            dividerRepository.flush();
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Reordering was interrupted", e);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to reorder dividers", e);
+        }
     }
 
     // 本棚に属する仕切りの取得

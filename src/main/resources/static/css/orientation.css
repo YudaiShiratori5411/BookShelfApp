@@ -1,0 +1,274 @@
+@media screen and (orientation: landscape) {
+   /* メインコンテナの基本スタイル */
+   .container.mt-5 {
+       display: flex;
+       justify-content: center;
+       align-items: flex-start;
+   }
+
+   /* スマートフォンサイズ */
+   @media screen and (max-width: 932px) {
+       .container.mt-5 {
+           min-height: 120vh;
+       }
+        
+       .col-md-6 {
+           display: flex;
+           justify-content: center;
+           align-items: center;
+           width: 650px;
+       }
+       
+       .container-fluid {
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+       }
+
+       /* 検索フォームのコンテナ */
+       .search-container.custom-mx-auto {
+           position: absolute;
+           left: 50%;
+           transform: translateX(-50%);
+           width: 50%;
+           max-width: 400px;
+       }
+       
+       .input-group {
+           width: 100%;       
+       }
+       
+       .book-card {
+           min-width: 40px;
+           height: 180px;
+       }
+
+       .shelf-divider {
+           min-width: 40px;
+           min-height: 180px;
+       }
+       
+       .modal-dialog {
+           max-width: 90%;
+           width: 400px;
+           margin: 1.75rem auto;
+       }
+   }
+
+   /* タブレットサイズ */
+   @media screen and (min-width: 933px) {
+       .col-md-6 {
+           display: flex;
+           justify-content: center;
+           align-items: center;
+           width: 850px;
+           height: 540px;
+       }
+       
+       .container-fluid {
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+       }
+
+       .search-container.custom-mx-auto {
+           position: absolute;
+           left: 50%;
+           transform: translateX(-50%);
+           width: 60%;
+           max-width: 500px;
+       }
+       
+       .input-group {
+           width: 100%;       
+       }
+       
+       .book-card {
+           min-width: 45px;
+           height: 200px;
+       }
+
+       .shelf-divider {
+           min-width: 45px;
+           min-height: 200px;
+       }
+
+       .bookshelf {
+           width: 100vw;
+           margin: 0;
+           padding: 0;
+       }
+       
+       .books-container {
+           padding: 15px 10px 0 10px;
+           margin: 0;
+       }
+       
+       .sorting-mode .book-link {
+           pointer-events: none !important;
+           cursor: grab !important;
+       }
+        
+       .sorting-mode .book-card {
+           pointer-events: all !important;
+       }
+       
+       /* ドラッグ中の本のスタイル */
+       .book-card.dragging {
+           opacity: 0.6;
+           cursor: grabbing;
+           position: relative;
+           z-index: 99;
+           transform: none !important;
+           box-shadow: none !important;
+           background: white !important; /* 背景を白に固定 */
+       }
+        
+       /* ドラッグ中の本のスパインのスタイル */
+       .book-card.dragging .book-spine {
+           height: 100%;
+           width: 100%;
+           box-shadow: none;
+           writing-mode: vertical-rl;
+           font-size: 0.8em;
+           padding: 5px 2px;
+           overflow: hidden;
+           background: white !important; /* 背景を白に固定 */
+           display: flex;
+           align-items: center;
+           position: relative;
+           /* グラデーションを削除 */
+           background-image: none !important;
+       }
+        
+       /* 不要なグラデーションや影を確実に削除 */
+       .book-card.dragging .book-spine::before,
+       .book-card.dragging .book-spine::after {
+           display: none !important;
+       }
+       
+       /* プログレスバーのスタイルを維持 */
+       .book-card.dragging .book-progress {
+           position: absolute;
+           bottom: 0;
+           left: 0;
+           width: 100%;
+           opacity: 0.3;
+       }
+        
+        /* ドラッグ中のリンクのスタイル */
+        .book-card.dragging .book-link {
+            height: 100%;
+            width: 100%;
+            background: white !important;
+            display: block;
+        }
+       
+       .modern-dropdown-menu li {
+           list-style: none;
+           padding: 0;
+           margin: 0;
+       }
+             
+       .modern-dropdown-item {
+           display: flex;
+           align-items: center;
+           justify-content: flex-start;
+           min-height: 48px;
+           padding: 8px 12px;
+           width: 100%;
+           border-radius: 4px;
+           white-space: nowrap;
+           border: none;
+           background: none;
+           color: #333;
+           font-size: 0.9rem;
+           transition: all 0.2s ease;
+       }
+
+       /* 検索結果モーダルのスタイル */
+       .modal-dialog.modal-lg {
+           width: 780px !important;
+       }
+
+       /* グリッドコンテナのスタイル */
+       .no-margin-top {
+           margin-top: 0 !important;
+       }
+       
+       #searchResultModal .modal-body .col-md-6.col-lg-4 {
+           display: block;
+           width: auto;
+           height: auto;
+           padding: 0.5rem;
+       }
+       
+       #searchResults .row {
+           display: grid;
+           grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+           gap: 1rem;
+           margin: 0;
+       }
+       
+       #searchResults .card {
+           height: 160px !important;
+           margin: 0;
+       }
+       #searchResults .card-body {
+           padding: 0.75rem;
+           width: 100%;
+       }
+        
+       #searchResults .card-title {
+           font-size: 0.9rem;
+           margin: 0;
+           line-height: 1.2;
+       }
+
+       .book-info {
+           font-size: 0.8rem;
+       }
+
+       .book-info p {
+           margin: 0;
+           line-height: 1.2;
+       }
+
+       .progress {
+           margin: 0.25rem 0;
+       }
+
+       .btn-sm {
+           padding: 0.25rem 0.5rem;
+           font-size: 0.8rem;
+           margin-top: auto;
+       }
+       
+       .modal-dialog {
+           max-width: 90%;
+           width: 600px;
+           margin: 2rem auto;
+       }
+       
+       .modal-body {
+           padding: 1rem;
+       }
+
+       .modal-content {
+           font-size: 1.2rem;
+           padding: 1.5rem;
+       }
+
+       .modal-footer .btn {
+           padding: 0.75rem 1.5rem;
+           font-size: 1.1rem;
+       }
+   }
+
+   /* カード共通スタイル */
+   .card {
+       width: 100%;
+       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+   }
+}
+
