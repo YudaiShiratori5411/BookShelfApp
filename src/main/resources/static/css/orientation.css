@@ -263,6 +263,14 @@
            font-size: 1.1rem;
        }
    }
+   
+   /* PC向けのメディアクエリ修正 */
+    @media screen and (min-width: 1201px) {
+        .col-md-6 {
+            width: 800px !important;
+            height: 300px !important;
+        }
+    }
 
    /* カード共通スタイル */
    .card {
