@@ -56,7 +56,7 @@
    }
 
    /* タブレットサイズ */
-   @media screen and (min-width: 933px) {
+   @media screen and (min-width: 933px) and (max-width: 1200px) {
        .col-md-6 {
            display: flex;
            justify-content: center;
@@ -121,7 +121,7 @@
            z-index: 99;
            transform: none !important;
            box-shadow: none !important;
-           background: white !important; /* 背景を白に固定 */
+           background: white !important;
        }
         
        /* ドラッグ中の本のスパインのスタイル */
@@ -133,11 +133,10 @@
            font-size: 0.8em;
            padding: 5px 2px;
            overflow: hidden;
-           background: white !important; /* 背景を白に固定 */
+           background: white !important;
            display: flex;
            align-items: center;
            position: relative;
-           /* グラデーションを削除 */
            background-image: none !important;
        }
         
