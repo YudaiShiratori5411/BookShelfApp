@@ -1,0 +1,180 @@
+/* 本棚のスタイル */
+.bookshelf {
+    width: 100%;
+    margin: 0 0 -9px 0;
+    padding: 0;
+    background: linear-gradient(
+        to bottom,
+        #8b4513,
+        #603a1d
+    ) !important;
+    min-height: 250px;
+    position: relative;
+    transition: background 0.3s ease;
+}
+
+.bookshelf.dark-mode {
+    background: linear-gradient(
+        to bottom,
+        #5a3017,
+        #4f2d24
+    ) !important;
+}
+
+.bookshelf.cream-mode {
+    background: linear-gradient(
+        to bottom,
+        #e2d3c0,
+        #d6c5b1
+    ) !important;
+}
+
+.shelf-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    padding: 0 1rem;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.shelf-title .btn {
+    color: white;
+    background: none;
+    border: none;
+    outline: none;
+    font-size: 1.5em;
+}
+
+.shelf-title .btn:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.shelf-title .btn-link {
+    color: white;
+    text-decoration: none;
+    font-size: 1.5em;
+    padding: 0.25rem 0.5rem;
+}
+
+.shelf-name {
+    flex-grow: 1;
+}
+
+.shelf-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.books-container {
+    display: flex;
+    overflow-x: auto;
+    padding: 15px 10px 0px 10px;
+    gap: 2px;
+    scrollbar-width: none;  /* Firefoxのスクロールバーを非表示 */
+}
+
+.books-container::-webkit-scrollbar {
+    display: none;
+}
+
+.book-count {
+    color: #fff;
+    white-space: nowrap;
+    font-size: 0.9em;
+}
+
+/* 本棚の木目効果 */
+.bookshelf::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+        90deg,
+        rgba(0,0,0,0.05),
+        rgba(0,0,0,0.05) 1px,
+        transparent 1px,
+        transparent 15px
+    );
+    pointer-events: none;
+}
+
+.shelf-menu {
+    margin-left: auto;
+}
+
+.shelf-menu-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5em;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.shelf-menu-btn:hover,
+.shelf-menu-btn:focus {
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.shelf-menu-btn span {
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.shelf-menu-icon {
+    font-size: 1.5em;
+}
+
+.sorting-active .shelf-menu-btn {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+.sorting-mode-message {
+    display: none;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-top: 8px;
+    font-size: 0.9em;
+}
+
+.books-container.sorting-mode + .sorting-mode-message {
+    display: block;
+}
+
+.menu-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5em;
+    cursor: pointer;
+    padding: 5px 10px;
+}
+
+@keyframes highlightFade {
+    0% { background-color: rgba(255, 255, 255, 0.1); }
+    100% { background-color: transparent; }
+}
+
+.books-container.highlight {
+    animation: highlightFade 1s ease-out;
+}
+
+.books-container.sorting-mode:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+}

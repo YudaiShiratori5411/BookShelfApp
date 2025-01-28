@@ -1,25 +1,24 @@
 {
-  "name": "BookShelf",
-  "short_name": "BookShelf",
-  "description": "私設図書館管理アプリ",
-  "start_url": "/login",
-  "display": "standalone",
-  "orientation": "landscape",
-  "background_color": "#343a40",
-  "theme_color": "#343a40",
-  "permissions" : ["camera"],
-  "icons": [
-    {
-      "src": "/icons/icon-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icons/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ]
+    "name": "BookShelf",
+    "short_name": "BookShelf",
+    "description": "私設図書館管理アプリ",
+    "start_url": "/login",
+    "display": "standalone",
+    "background_color": "#343a40",
+    "theme_color": "#343a40",
+    "permissions": ["camera"],
+    "icons": [
+        {
+            "src": "/icons/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/icons/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
 }

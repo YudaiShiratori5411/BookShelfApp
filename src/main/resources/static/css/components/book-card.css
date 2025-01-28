@@ -1,0 +1,116 @@
+.book-link {
+    text-decoration: none;
+    color: inherit;
+    height: 100%;
+    display: block;
+}
+
+/* 本のスタイル */
+.book-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.book-card {
+    display: inline-block;
+    min-width: 30px;
+    height: 180px;
+    flex-shrink: 0;
+    background: white;
+    position: relative;
+    transition: transform 0.2s ease-in-out;
+    cursor: grab;
+    z-index: 1;
+}
+
+/* 本のカード内の全要素に対してイベントを確実に伝播させる */
+.book-card * {
+    pointer-events: auto;
+}
+
+.book-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    z-index: 10;
+}
+
+.book-card:active {
+    cursor: grabbing;
+}
+
+.book-spine {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    position: relative;
+    writing-mode: vertical-rl;
+    padding: 5px 2px;
+    font-size: 0.8em;
+    overflow: hidden;
+    z-index: 1;
+    background: linear-gradient(
+        to right,
+        rgba(0,0,0,0.1),
+        transparent 20%,
+        transparent 80%,
+        rgba(0,0,0,0.1)
+    );
+}
+
+.book-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    transition: height 0.3s ease;
+    opacity: 0.3;
+}
+
+/* 読書状態による色分け */
+.status-not_started .book-progress {
+    background-color: #6c757d;  /* 灰色 */
+}
+
+.status-reading .book-progress {
+    background-color: #28a745;  /* 緑色 */
+}
+
+.status-completed .book-progress {
+    background-color: #007bff;  /* 青色 */
+}
+
+.status-on_hold .book-progress {
+    background-color: #ffc107;  /* 黄色 */
+}
+
+/* 本の情報をホバー時に表示するためのツールチップ */
+.book-info-tooltip {
+    visibility: hidden;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    white-space: nowrap;
+    z-index: 1000;
+}
+
+.book-card:hover .book-info-tooltip {
+    visibility: visible;
+}
+
+.book-detail-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.book-detail-actions .btn {
+    min-width: 100px;
+}
