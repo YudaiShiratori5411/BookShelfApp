@@ -1,6 +1,5 @@
 const CACHE_NAME = 'bookshelf-v1';
 const urlsToCache = [
-    '/',
     '/login',
     '/css/components/book-card.css',
     '/css/components/cover-image.css',
@@ -15,12 +14,20 @@ const urlsToCache = [
     '/css/reading-count.css',
     '/css/search-bar.css',
     '/css/shelf-divider.css',
-    '/js/search-bar.js',
+    '/css/style.css',
+    '/js/bookshelf.js',
+    '/js/dropdown.js',
+    '/js/form-validation.js',
     '/js/image-upload.js',
-    '/js/scanner/BookFormScanner.js',
     '/js/reading-count.js',
+    '/js/reading-progress-chart.js',
+    '/js/readingSession.js',
+    '/js/search-bar.js',
+    '/js/scanner/BookFormScanner.js',
     '/icons/icon-192x192.png',
-    '/icons/icon-512x512.png'
+    '/icons/icon-512x512.png',
+    '/manifest.json',
+    '/favicon.ico'
 ];
 
 // インストール時の処理
@@ -29,27 +36,54 @@ self.addEventListener('install', event => {
         caches.open(CACHE_NAME)
             .then(cache => {
                 console.log('Opening cache...');
-                const cachePromises = urlsToCache.map(url => {
-                    return cache.add(url).catch(err => {
-                        console.error('Error caching', url, err);
+                return cache.addAll(urlsToCache)
+                    .catch(error => {
+                        console.error('Cache addAll error:', error);
+                        // 個別のリソースのキャッシュを試みる
+                        return Promise.all(
+                            urlsToCache.map(url =>
+                                cache.add(url).catch(err => {
+                                    console.error('Failed to cache:', url, err);
+                                })
+                            )
+                        );
                     });
-                });
-                return Promise.all(cachePromises);
             })
     );
 });
 
 // フェッチ時の処理
 self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // キャッシュが見つかればそれを返す
-        if (response) {
-          return response;
-        }
-        // 見つからなければネットワークへ取りに行く
-        return fetch(event.request);
-      })
-  );
+    // CSSファイルの場合はキャッシュを使用せず、常にネットワークから取得
+    if (event.request.url.endsWith('.css')) {
+        event.respondWith(
+            fetch(event.request)
+                .catch(() => {
+                    return caches.match(event.request);
+                })
+        );
+        return;
+    }
+
+    event.respondWith(
+        caches.match(event.request)
+            .then(response => {
+                return response || fetch(event.request);
+            })
+    );
+});
+
+// アクティベーション時の処理（古いキャッシュの削除）
+self.addEventListener('activate', event => {
+    event.waitUntil(
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cacheName => {
+                    if (cacheName !== CACHE_NAME) {
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        })
+    );
 });
