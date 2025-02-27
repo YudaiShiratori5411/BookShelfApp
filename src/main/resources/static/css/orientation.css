@@ -53,6 +53,45 @@
            width: 400px;
            margin: 1.75rem auto;
        }
+       
+              /* 検索結果モーダルのスタイル */
+       .modal-dialog.modal-lg {
+           width: 780px !important;
+       }
+
+       /* グリッドコンテナのスタイル */
+       .no-margin-top {
+           margin-top: 0 !important;
+       }
+       
+       #searchResultModal .modal-body .col-md-6.col-lg-4 {
+           display: block;
+           width: auto;
+           height: auto;
+           padding: 0.5rem;
+       }
+       
+       #searchResults .row {
+           display: grid;
+           grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+           gap: 1rem;
+           margin: 0;
+       }
+       
+       #searchResults .card {
+           height: 135px !important;
+           margin: 0;
+       }
+       #searchResults .card-body {
+           padding: 0.75rem;
+           width: 100%;
+       }
+        
+       #searchResults .card-title {
+           font-size: 0.9rem;
+           margin: 0;
+           line-height: 1.2;
+       }
    }
 
    /* タブレットサイズ */
@@ -216,7 +255,7 @@
        }
        
        #searchResults .card {
-           height: 160px !important;
+           height: 110px !important;
            margin: 0;
        }
        #searchResults .card-body {
@@ -275,6 +314,50 @@
         .col-md-6 {
             width: 800px !important;
             height: 300px !important;
+        }
+        
+       /* 検索結果モーダルのスタイル */
+       .modal-dialog.modal-lg {
+          max-width: 80%;
+          margin: 1.75rem auto;
+        }
+
+       /* グリッドコンテナのスタイル */
+       .no-margin-top {
+           margin-top: 0 !important;
+       }
+       
+       #searchResultModal .modal-body .col-md-6.col-lg-4 {
+           display: block;
+           width: auto;
+           height: auto;
+           padding: 0.5rem;
+       }
+       
+       #searchResults .row {
+           display: grid;
+           grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+           gap: 1rem;
+           margin: 0;
+       }
+       
+        #searchResults .card {
+          height: 140px !important;
+        }
+        
+        #searchResults .card-body {
+          padding: 0.75rem;
+        }
+        
+        #searchResults .card-title {
+          font-size: 0.9rem;
+          margin-bottom: 0.5rem;
+          line-height: 1.2;
+        }
+        
+        /* グリッドのギャップを小さく */
+        #searchResults .row.g-4 {
+          gap: 0.5rem !important;
         }
     }
 

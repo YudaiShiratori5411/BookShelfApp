@@ -38,7 +38,8 @@ public class BookViewController {
     public String listBooks(Model model, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
-            return "redirect:/login";
+            userId = 1L;  // デフォルトユーザーID（最初のユーザー）
+            session.setAttribute("userId", userId);
         }
 
         List<Shelf> shelves = shelfService.getAllShelvesWithBooks(userId);

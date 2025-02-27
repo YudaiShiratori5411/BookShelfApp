@@ -44,7 +44,7 @@
 <body class="p-0 orientation-control">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/login">Bibliotheca Privata</a>
+            <a class="navbar-brand" href="/">Bibliotheca Privata</a>
 
             <!-- isLoginPage属性がない場合のみ表示 (AuthController.java) -->
             <th:block th:unless="${isLoginPage}">
@@ -81,7 +81,7 @@
                     </div>
                     <div class="modal-body">
                         <div id="searchResults" class="row g-4">
-                            <!-- 検索結果がここに動的に追加されます -->
+                            <!-- 検索結果がここに動的に追加される -->
                         </div>
                         <div id="noResults" class="text-center p-4" style="display: none;">
                             <p class="lead">検索結果が見つかりませんでした</p>
@@ -118,16 +118,15 @@
         });
     }
     </script>
-    
-    <th:block th:unless="${isLoginPage}">
-        <script th:src="@{/js/search-bar.js}"></script>
-    </th:block>
-    
-    <th:block th:unless="${isLoginPage}">
+        
+    <th:block>
         <script th:src="@{/js/image-upload.js}"></script>
         <script th:src="@{/js/scanner/BookFormScanner.js}"></script>
         <script th:src="@{/js/reading-count.js}"></script>
     </th:block>
+    
+    <!-- 最新のJavaScriptファイルを確実に読み込むクエリパラメータを追加 -->
+    <script th:src="@{/js/search-bar.js(v=${#dates.createNow().getTime()})}"></script>
     
     <!-- カスタムスクリプト -->
     <th:block layout:fragment="scripts"></th:block>
