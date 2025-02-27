@@ -28,14 +28,14 @@
        /* 検索フォームのコンテナ */
        .search-container.custom-mx-auto {
            position: absolute;
-           left: 50%;
+           left: 53%;
            transform: translateX(-50%);
            width: 50%;
            max-width: 400px;
        }
        
        .input-group {
-           width: 100%;       
+           width: 85%;       
        }
        
        .book-card {
@@ -112,14 +112,14 @@
 
        .search-container.custom-mx-auto {
            position: absolute;
-           left: 50%;
+           left: 55%;
            transform: translateX(-50%);
-           width: 60%;
+           width: 45%;
            max-width: 500px;
        }
        
        .input-group {
-           width: 100%;       
+           width: 85%;       
        }
        
        .book-card {
@@ -315,6 +315,14 @@
             width: 800px !important;
             height: 300px !important;
         }
+        
+        .search-container.custom-mx-auto {
+           position: absolute;
+           left: 50%;
+           transform: translateX(-50%);
+           width: 50%;
+           max-width: 500px;
+       }
         
        /* 検索結果モーダルのスタイル */
        .modal-dialog.modal-lg {

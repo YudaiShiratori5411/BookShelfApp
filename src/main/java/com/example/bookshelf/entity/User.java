@@ -15,15 +15,17 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    
     @Column(unique = true, nullable = false)
     private String username;
-
+    
     @Column(nullable = false)
     private String password;
-
+    
     // パスワードの暗号化のために必要
     @Column(nullable = false)
     private String salt;
+    
+    @Column
+    private String profileImagePath;
 }
-

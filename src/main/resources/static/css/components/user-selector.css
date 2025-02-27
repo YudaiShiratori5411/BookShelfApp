@@ -1,0 +1,24 @@
+/* ユーザーセレクタースタイル */
+.user-selector {
+    position: relative;
+}
+
+.user-selector .dropdown-toggle {
+    cursor: pointer;
+}
+
+.user-selector .dropdown-toggle::after {
+    margin-left: 0.5rem;
+}
+
+.user-selector .dropdown-menu {
+    min-width: 200px;
+    left: auto !important;
+    right: -130px;
+    transform: none !important;
+}
+
+.user-selector img.rounded-circle {
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}

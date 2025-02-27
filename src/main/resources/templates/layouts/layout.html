@@ -32,6 +32,7 @@
     <link rel="stylesheet" th:href="@{/css/components/sorting.css}">
     <link rel="stylesheet" th:href="@{/css/components/cover-image.css}">
     <link rel="stylesheet" th:href="@{/css/components/forms.css}">
+    <link rel="stylesheet" th:href="@{/css/components/user-selector.css}">
 
     <!-- その他の機能別スタイル -->
     <link rel="stylesheet" th:href="@{/css/reading-count.css}">
@@ -44,9 +45,30 @@
 <body class="p-0 orientation-control">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/">Bibliotheca Privata</a>
+<!--            <a class="navbar-brand" href="/">Bibliotheca</a>-->
+            
+            <!-- ユーザーセレクター -->
+            <div class="user-selector d-flex align-items-center me-3">
+                <div class="dropdown">
+                    <a class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" 
+                       id="userDropdown" 
+                       data-bs-toggle="dropdown" 
+                       aria-expanded="false">
+                        <img id="currentUserImage" src="/images/default-profile.png" alt="user" 
+                             width="32" height="32" class="rounded-circle me-2">
+                        <span id="currentUserName">ゲスト</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" id="userDropdownMenu" aria-labelledby="userDropdown">
+                        <!-- ユーザーリストがJSで動的に追加される -->
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/users/register">
+                            <i class="fas fa-user-plus me-2"></i>新規ユーザー作成
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
 
-            <!-- isLoginPage属性がない場合のみ表示 (AuthController.java) -->
+            <!-- isLoginPage属性がない場合のみ表示 -->
             <th:block th:unless="${isLoginPage}">
                 <!-- 検索フォーム -->
                 <div class="search-container custom-mx-auto">
@@ -127,6 +149,7 @@
     
     <!-- 最新のJavaScriptファイルを確実に読み込むクエリパラメータを追加 -->
     <script th:src="@{/js/search-bar.js(v=${#dates.createNow().getTime()})}"></script>
+    <script th:src="@{/js/user-selector.js(v=${#dates.createNow().getTime()})}"></script>
     
     <!-- カスタムスクリプト -->
     <th:block layout:fragment="scripts"></th:block>
