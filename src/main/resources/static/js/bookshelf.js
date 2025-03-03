@@ -1191,6 +1191,3 @@ function stopDragging(item) {
         swipeDisabler.remove();
     }
 }
-
-
-

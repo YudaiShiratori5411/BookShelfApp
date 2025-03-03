@@ -3,50 +3,41 @@ document.addEventListener('DOMContentLoaded', function() {
     const userDropdownMenu = document.getElementById('userDropdownMenu');
     const currentUserImage = document.getElementById('currentUserImage');
     const currentUserName = document.getElementById('currentUserName');
+    const userProfileLink = document.querySelector('.user-selector a[href="/users/profile"]');
     
-    // デフォルト画像パス
-    const DEFAULT_PROFILE_IMAGE = '/images/default-profile.png';
-    
-    // ローカルストレージからユーザー情報取得または初期化
+    // 初期化と読み込み（画像更新以外の機能を残す）
     initUserData();
-    
-    // ユーザーリストを取得して表示
     fetchUserList();
     
+    // ユーザー情報の初期化と読み込み
     function initUserData() {
         const storedUserId = localStorage.getItem('currentUserId');
         const storedUserName = localStorage.getItem('currentUserName');
-        const storedUserImage = localStorage.getItem('currentUserImage');
         
         if (storedUserId && storedUserName) {
             currentUserName.textContent = storedUserName;
             
-            if (storedUserImage) {
-                currentUserImage.src = storedUserImage;
-            } else {
-                currentUserImage.src = DEFAULT_PROFILE_IMAGE;
+            // ユーザープロフィールへのリンク先を設定
+            if (userProfileLink) {
+                userProfileLink.href = `/users/profile/${storedUserId}`;
             }
-            
-            // セッションにユーザーIDを設定
-            setSessionUserId(storedUserId);
         } else {
             // デフォルト: ゲストユーザー
             currentUserName.textContent = 'ゲスト';
-            currentUserImage.src = DEFAULT_PROFILE_IMAGE;
             
-            // ローカルストレージに保存
-            localStorage.setItem('currentUserId', '1'); // ゲストユーザーIDを1とする
+            localStorage.setItem('currentUserId', '1');
             localStorage.setItem('currentUserName', 'ゲスト');
-            localStorage.setItem('currentUserImage', DEFAULT_PROFILE_IMAGE);
             
-            // セッションにユーザーIDを設定
-            setSessionUserId('1');
+            if (userProfileLink) {
+                userProfileLink.href = '/users/profile/1';
+            }
         }
     }
     
     // サーバーからユーザーリストを取得
     async function fetchUserList() {
         try {
+            console.log('Fetching user list...');
             const response = await fetch('/users/api/list');
             if (!response.ok) {
                 console.error('ユーザーリスト取得エラー', response.statusText);
@@ -54,16 +45,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             const users = await response.json();
+            console.log('User list received:', users);
             populateUserDropdown(users);
         } catch (error) {
             console.error('ユーザーリスト取得エラー:', error);
         }
     }
     
-    // ドロップダウンメニューにユーザーリストを表示
     function populateUserDropdown(users) {
-        // 既存の項目をクリア (最後の新規ユーザー作成以外)
-        while (userDropdownMenu.children.length > 2) {
+        console.log('Populating dropdown with users:', users.length);
+        
+        // 既存の項目をクリア (すべて削除)
+        while (userDropdownMenu.children.length > 0) {
             userDropdownMenu.removeChild(userDropdownMenu.firstChild);
         }
         
@@ -77,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // プロフィール画像
             const img = document.createElement('img');
-            img.src = user.profileImagePath || DEFAULT_PROFILE_IMAGE;
+            img.src = user.profileImagePath || '/images/default-profile.jpg';
             img.alt = user.username;
             img.width = 24;
             img.height = 24;
@@ -98,14 +91,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 switchUser(user.id, user.username, user.profileImagePath);
             });
             
-            // 先頭に追加 (区切り線の前)
-            userDropdownMenu.insertBefore(menuItem, userDropdownMenu.children[0]);
+            // メニューに追加
+            userDropdownMenu.appendChild(menuItem);
         });
+        
+        // 区切り線
+        const divider = document.createElement('li');
+        divider.innerHTML = '<hr class="dropdown-divider">';
+        userDropdownMenu.appendChild(divider);
+        
+        // 新規ユーザー作成リンク
+        const newUserItem = document.createElement('li');
+        newUserItem.innerHTML = '<a class="dropdown-item" href="/users/register"><i class="fas fa-user-plus me-2"></i>新規ユーザー作成</a>';
+        userDropdownMenu.appendChild(newUserItem);
     }
     
     // ユーザー切り替え
     async function switchUser(userId, username, profileImagePath) {
         try {
+            console.log('Switching to user:', username, userId);
+            
             // サーバーサイドでユーザー切り替え
             const response = await fetch(`/users/switch/${userId}`, {
                 method: 'POST',
@@ -121,31 +126,14 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // UIを更新
             currentUserName.textContent = username;
-            currentUserImage.src = profileImagePath || DEFAULT_PROFILE_IMAGE;
             
             // ローカルストレージに保存
             localStorage.setItem('currentUserId', userId);
             localStorage.setItem('currentUserName', username);
-            localStorage.setItem('currentUserImage', profileImagePath || DEFAULT_PROFILE_IMAGE);
             
-            // ページをリロード
-            window.location.reload();
+            window.location.href = "/books";
         } catch (error) {
             console.error('ユーザー切り替えエラー:', error);
-        }
-    }
-    
-    // セッションにユーザーIDを設定
-    async function setSessionUserId(userId) {
-        try {
-            await fetch(`/users/switch/${userId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-        } catch (error) {
-            console.error('セッション更新エラー:', error);
         }
     }
 });

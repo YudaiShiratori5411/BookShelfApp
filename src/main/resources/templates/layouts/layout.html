@@ -41,23 +41,56 @@
     <link rel="stylesheet" th:href="@{/css/search-bar.css}">
     <link rel="stylesheet" th:href="@{/css/auth-tabs.css}">
     <link rel="stylesheet" th:href="@{/css/orientation.css}">
+    
+    <script>
+        // 画像要素のsrc属性変更を監視するスクリプト
+        document.addEventListener('DOMContentLoaded', function() {
+          const headerImg = document.getElementById('currentUserImage');
+          if (headerImg) {
+            console.log('Initial header image:', headerImg.src);
+            
+            // MutationObserverの設定
+            const observer = new MutationObserver(function(mutations) {
+              mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'src') {
+                  console.log('Header image changed to:', headerImg.src, 'by script:', new Error().stack);
+                }
+              });
+            });
+            
+            observer.observe(headerImg, {
+              attributes: true,
+              attributeFilter: ['src']
+            });
+          }
+        });
+        </script>
 </head>
 <body class="p-0 orientation-control">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
-<!--            <a class="navbar-brand" href="/">Bibliotheca</a>-->
             
             <!-- ユーザーセレクター -->
             <div class="user-selector d-flex align-items-center me-3">
+                <!-- ユーザープロフィールリンク（アイコンとユーザー名） -->
+                <a th:href="@{/users/profile}" class="d-flex align-items-center text-white text-decoration-none">
+                    <img id="currentUserImage" 
+                         th:src="${@userService.getCurrentUserProfileImage(session.userId) + '?t=' + #dates.createNow().getTime()}" 
+                         alt="user" 
+                         width="32" height="32" 
+                         class="rounded-circle me-2">
+                    <span id="currentUserName" 
+                          th:text="${session.currentUser != null ? session.currentUser.username : 'ゲスト'}"
+                          th:data-user-id="${session.currentUser != null ? session.currentUser.id : ''}">
+                        ゲスト
+                    </span>
+                </a>
+                
+                <!-- ドロップダウンメニュー用ボタン -->
                 <div class="dropdown">
-                    <a class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" 
-                       id="userDropdown" 
-                       data-bs-toggle="dropdown" 
-                       aria-expanded="false">
-                        <img id="currentUserImage" src="/images/default-profile.png" alt="user" 
-                             width="32" height="32" class="rounded-circle me-2">
-                        <span id="currentUserName">ゲスト</span>
-                    </a>
+                    <button class="btn btn-link text-white p-0 dropdown-toggle" type="button"
+                            id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    </button>
                     <ul class="dropdown-menu dropdown-menu-end" id="userDropdownMenu" aria-labelledby="userDropdown">
                         <!-- ユーザーリストがJSで動的に追加される -->
                         <li><hr class="dropdown-divider"></li>
@@ -140,6 +173,16 @@
         });
     }
     </script>
+    
+    <script>
+        // 他のページからプロフィール画像を更新するための関数
+        function updateUserImage(imagePath) {
+            const headerImage = document.querySelector('#currentUserImage');
+            if (headerImage) {
+                headerImage.src = imagePath;
+            }
+        }
+    </script>
         
     <th:block>
         <script th:src="@{/js/image-upload.js}"></script>
@@ -150,6 +193,10 @@
     <!-- 最新のJavaScriptファイルを確実に読み込むクエリパラメータを追加 -->
     <script th:src="@{/js/search-bar.js(v=${#dates.createNow().getTime()})}"></script>
     <script th:src="@{/js/user-selector.js(v=${#dates.createNow().getTime()})}"></script>
+    
+<!--    <th:block layout:fragment="scripts">-->
+<!--        <script th:src="@{/js/profile-image-upload.js(v=${#dates.createNow().getTime()})}"></script>-->
+<!--    </th:block>-->
     
     <!-- カスタムスクリプト -->
     <th:block layout:fragment="scripts"></th:block>

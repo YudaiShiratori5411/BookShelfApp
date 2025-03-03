@@ -4,6 +4,7 @@
 }
 
 .user-selector .dropdown-toggle {
+    margin-left: -10px;
     cursor: pointer;
 }
 

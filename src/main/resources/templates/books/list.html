@@ -4,6 +4,40 @@
       layout:decorate="~{layouts/layout}">
 <head>
     <title>本の一覧</title>
+    <!-- プロフィール画像の即時更新スクリプト（最優先）-->
+    <script>
+    // すべてのスクリプトよりも先に実行
+    (function() {
+      // プロフィール画像の更新が行われたかチェック
+      const imageUpdateFlag = localStorage.getItem('imageUpdateFlag');
+      
+      if (imageUpdateFlag === 'true') {
+        console.log('Image update flag detected!');
+        // 更新フラグをクリア（一度だけ実行するため）
+        localStorage.removeItem('imageUpdateFlag');
+        
+        // 画像更新を行う（DOMが読み込まれる前でも）
+        const intervalId = setInterval(function() {
+          const headerImg = document.getElementById('currentUserImage');
+          if (headerImg) {
+            // 画像パスを取得
+            const imageSrc = localStorage.getItem('profileImageSrc');
+            if (imageSrc) {
+              // 画像を更新
+              headerImg.src = imageSrc;
+              console.log('Header image updated successfully!');
+            }
+            clearInterval(intervalId);
+          }
+        }, 10);
+        
+        // セーフティタイムアウト
+        setTimeout(function() {
+          clearInterval(intervalId);
+        }, 5000);
+      }
+    })();
+    </script>
 </head>
 <body class="bookshelf-page">
     <div layout:fragment="content" class="bookshelf-top-page">
@@ -197,10 +231,140 @@
         <script th:if="${!#lists.isEmpty(shelves)}" th:src="@{/js/scanner/BookFormScanner.js}"></script>
         <script th:src="@{/js/bookshelf.js}"></script>
         <script th:src="@{/js/dropdown.js}"></script>
+        
+        <!-- サーバーからのプロフィール更新情報があれば処理 -->
+        <script th:if="${profileUpdated}">
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('Profile was updated, updating header image');
+                
+                // 更新された画像パスを取得
+                const updatedImagePath = "[[${updatedImagePath}]]";
+                
+                if (updatedImagePath) {
+                    console.log('Updated image path:', updatedImagePath);
+                    
+                    // ヘッダーの画像を更新
+                    const headerImage = document.getElementById('currentUserImage');
+                    if (headerImage) {
+                        headerImage.src = updatedImagePath;
+                        console.log('Header image updated');
+                    }
+                    
+                    // ローカルストレージも更新
+                    localStorage.setItem('profileImageSrc', updatedImagePath);
+                }
+            });
+        </script>
+        
+        <!-- ユーザー強制リロード情報があれば処理 -->
+        <script th:if="${forceUserReload}">
+            // 保存
+            const userId = "[[${userId}]]";
+            const username = "[[${username}]]";
+            const profileImagePath = "[[${profileImagePath}]]";
+            
+            // 少し遅延して実行
+            setTimeout(function() {
+                // DOM要素を取得
+                const currentUserImage = document.getElementById('currentUserImage');
+                const currentUserName = document.getElementById('currentUserName');
+                
+                // UIを更新
+                if (currentUserName) currentUserName.textContent = username;
+                if (currentUserImage) {
+                    // 強制的にキャッシュをクリアするための対策
+                    currentUserImage.setAttribute('src', 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
+                    setTimeout(() => {
+                        currentUserImage.src = profileImagePath;
+                    }, 50);
+                }
+                
+                // ローカルストレージを更新
+                localStorage.setItem('currentUserId', userId);
+                localStorage.setItem('currentUserName', username);
+                localStorage.setItem('profileImageSrc', profileImagePath);
+                
+                console.log('User data forcefully updated with cache clearing');
+            }, 100);
+        </script>
+        
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('Bookshelf page script loaded');
+                
+                // 現在のユーザーIDを取得
+                const headerImg = document.querySelector('#currentUserImage');
+                const userNameEl = document.querySelector('#currentUserName');
+                let userId = null;
+                
+                // ユーザーIDの取得を試みる
+                if (headerImg && headerImg.dataset.userId) {
+                  userId = headerImg.dataset.userId;
+                } else if (userNameEl && userNameEl.dataset.userId) {
+                  userId = userNameEl.dataset.userId;
+                } else {
+                  userId = localStorage.getItem('currentUserId');
+                }
+                
+                if (!userId) {
+                  console.log('No user ID available, cannot restore image');
+                  return;
+                }
+                
+                console.log('Current user ID on bookshelf page:', userId);
+                
+                // 保存されたプロフィール画像があるか確認
+                const savedImage = localStorage.getItem('savedProfileImage_' + userId);
+                const imageSaved = localStorage.getItem('profileImageSaved_' + userId) === 'true';
+                
+                if (imageSaved && savedImage) {
+                  // 保存された画像を設定
+                  if (headerImg) {
+                    headerImg.src = savedImage;
+                    console.log('Restored saved profile image for user', userId);
+                  }
+                  // フラグをリセット
+                  localStorage.removeItem('profileImageSaved_' + userId);
+                } else {
+                  // 「戻る」ボタンが押された場合は元の画像を復元
+                  const restoreOriginal = localStorage.getItem('restoreOriginalHeader_' + userId) === 'true';
+                  if (restoreOriginal) {
+                    const originalImage = localStorage.getItem('headerImageBeforeProfile_' + userId);
+                    if (originalImage && headerImg) {
+                      headerImg.src = originalImage;
+                      console.log('Restored original header image for user', userId);
+                    }
+                    // フラグをリセット
+                    localStorage.removeItem('restoreOriginalHeader_' + userId);
+                  }
+                }
+                
+                // 一時データの削除
+                localStorage.removeItem('headerImageBeforeProfile_' + userId);
+              });
+        </script>
+        
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+            // 戻るボタンから戻ってきた場合の処理
+            if (localStorage.getItem('useHeaderImageBeforeBack') === 'true') {
+                const savedImage = localStorage.getItem('headerImageBeforeBack');
+                if (savedImage) {
+                    const headerImg = document.querySelector('#currentUserImage');
+                    if (headerImg) {
+                        console.log('Restoring header image after back button:', savedImage);
+                        headerImg.src = savedImage;
+                    }
+                }
+                // フラグをクリア
+                localStorage.removeItem('useHeaderImageBeforeBack');
+                localStorage.removeItem('headerImageBeforeBack');
+            }
+        });
+        </script>
     </th:block>
 </div>
 </body>
 </html>
-
 
 

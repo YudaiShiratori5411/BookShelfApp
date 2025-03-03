@@ -20,6 +20,8 @@ const urlsToCache = [
     '/js/dropdown.js',
     '/js/form-validation.js',
     '/js/image-upload.js',
+    '/js/profile-image-upload.js',
+    '/js/profile-page-simple.js',
     '/js/reading-count.js',
     '/js/reading-progress-chart.js',
     '/js/readingSession.js',

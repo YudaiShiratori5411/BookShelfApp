@@ -309,11 +309,11 @@
        }
    }
    
-   /* PC向けのメディアクエリ修正 */
+   /* PC向け */
     @media screen and (min-width: 1201px) {
         .col-md-6 {
-            width: 800px !important;
-            height: 300px !important;
+            width: 350px !important;
+            height: 150px !important;
         }
         
         .search-container.custom-mx-auto {

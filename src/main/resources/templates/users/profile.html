@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+<head>
+    <title>ユーザープロフィール</title>
+</head>
+<body>
+    <div layout:fragment="content" class="container mt-4 profile-container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 mt-4 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="text-center">ユーザープロフィール</h2>
+                    </div>
+                    <div class="card-body">
+                        <!-- メッセージ表示 -->
+                        <div th:if="${success}" class="alert alert-success" role="alert">
+                            <span th:text="${success}"></span>
+                        </div>
+                        <div th:if="${error}" class="alert alert-danger" role="alert">
+                            <span th:text="${error}"></span>
+                        </div>
+                        
+                        <form th:action="@{/users/profile/update}" method="post" enctype="multipart/form-data">
+                            <input type="hidden" name="userId" th:value="${user.id}" />
+                            
+                            <!-- プロフィール情報表示セクション -->
+                            <div class="row mb-4">
+                                <div class="col-md-4 text-center">
+                                    <!-- プロフィール画像 -->
+                                    <div class="profile-image-container mb-3">
+                                        <img th:src="${user.profileImagePath != null ? user.profileImagePath + '?t=' + #dates.createNow().getTime() : '/images/default-profile.jpg'}"
+                                             alt="プロフィール画像" class="img-fluid rounded-circle profile-image"
+                                             style="width: 75px; height: 75px; object-fit: cover;">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="profileImage" class="form-label">プロフィール画像を変更</label>
+                                        <input type="file" class="form-control" id="profileImage" name="profileImage" accept="image/*">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-8">
+                                    <div class="mb-3">
+                                        <label for="username" class="form-label">ユーザー名</label>
+                                        <input type="text" class="form-control" id="username" name="username" 
+                                               th:value="${user.username}" required>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="newPassword" class="form-label">新しいパスワード（変更する場合のみ）</label>
+                                        <input type="password" class="form-control" id="newPassword" name="newPassword">
+                                        <div class="form-text">変更しない場合は空白のままにしてください</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-3 d-flex justify-content-center">
+                                <button type="submit" class="btn btn-primary" id="saveButton" onclick="localStorage.setItem('lastAction', 'save');">保存</button>
+                                <a href="javascript:history.back()" class="btn btn-secondary" id="backButton" onclick="localStorage.setItem('skipImageRefresh', 'true'); localStorage.setItem('lastAction', 'back');">戻る</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script th:if="${success}">
+        // プロフィール更新成功時に実行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 現在の画像パスを取得（タイムスタンプ付き）
+            const currentImagePath = document.querySelector('.profile-image').src;
+            
+            // ヘッダーの画像を更新
+            const headerImage = document.querySelector('#currentUserImage');
+            if (headerImage) {
+                headerImage.src = currentImagePath;
+            }
+            
+            // ローカルストレージも更新
+            localStorage.setItem('currentUserImage', currentImagePath);
+            
+            // 親ページがある場合は更新を伝える
+            if (window.opener && !window.opener.closed) {
+                window.opener.updateUserImage(currentImagePath);
+            }
+        });
+    </script>
+    
+    <script th:if="${updatedUser}">
+        // ローカルストレージの情報を更新
+        localStorage.setItem('currentUserId', '[[${updatedUserId}]]');
+        localStorage.setItem('currentUserName', '[[${updatedUserName}]]');
+        localStorage.setItem('currentUserImage', '[[${updatedUserImage}]]');
+        
+        // ページ全体をリロードして変更を反映
+        if (window.opener) {
+            window.opener.location.reload();
+        }
+    </script>
+    
+    <script>
+        // プロフィールページ読み込み時に実行
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Profile page loaded - preventing header image reset');
+            
+            // 現在のヘッダー画像を保存
+            const headerImg = document.querySelector('#currentUserImage');
+            const originalSrc = headerImg ? headerImg.src : null;
+            
+            if (originalSrc) {
+                console.log('Current header image:', originalSrc);
+                
+                // MutationObserverを使用して画像の変更を監視
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.type === 'attributes' && mutation.attributeName === 'src') {
+                            const newSrc = headerImg.src;
+                            
+                            // 1x1の透明GIFや不正な値への変更を検出
+                            if (newSrc.includes('data:image/gif;base64,R0lGOD') || 
+                                newSrc.includes('data:image/jpeg;base64') ||
+                                !newSrc.includes('/uploads/profiles/')) {
+                                
+                                console.log('Invalid header image change detected, restoring:', originalSrc);
+                                
+                                // 元の画像に戻す
+                                setTimeout(function() {
+                                    headerImg.src = originalSrc;
+                                }, 10);
+                            }
+                        }
+                    });
+                });
+                
+                // ヘッダー画像の変更を監視
+                observer.observe(headerImg, {
+                    attributes: true,
+                    attributeFilter: ['src']
+                });
+                
+                // 既存のuser-selector.jsなどのスクリプトによる遅延変更対策
+                setTimeout(function() {
+                    if (headerImg.src !== originalSrc) {
+                        console.log('Delayed header image change detected, restoring:', originalSrc);
+                        headerImg.src = originalSrc;
+                    }
+                }, 500);
+            }
+            
+            // フォーム要素と戻るボタンの処理
+            const profileForm = document.querySelector('form');
+            const backButton = document.getElementById('backButton');
+            
+            // ファイル選択時のプレビュー処理
+            const fileInput = document.getElementById('profileImage');
+            if (fileInput) {
+                fileInput.addEventListener('change', function() {
+                    if (this.files && this.files[0]) {
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            // プレビュー画像のみ更新
+                            const profileImg = document.querySelector('.profile-image');
+                            if (profileImg) {
+                                profileImg.src = e.target.result;
+                                console.log('Profile image preview updated');
+                            }
+                        };
+                        
+                        reader.readAsDataURL(this.files[0]);
+                    }
+                });
+            }
+            
+            // 戻るボタンクリック時
+            if (backButton) {
+                backButton.addEventListener('click', function() {
+                    // 戻るボタンクリック時にローカルストレージに元の画像を保存
+                    if (originalSrc) {
+                        localStorage.setItem('headerImageBeforeBack', originalSrc);
+                        localStorage.setItem('useHeaderImageBeforeBack', 'true');
+                    }
+                });
+            }
+        });
+    </script>
+    
+    <th:block layout:fragment="scripts">
+        <script th:src="@{/js/profile-image-upload.js(v=${#dates.createNow().getTime()})}"></script>
+        <script>
+            // フォールバックとして直接イベントリスナーも追加
+            window.addEventListener('load', function() {
+                setTimeout(function() {
+                    const fileInput = document.getElementById('profileImage');
+                    if (fileInput) {
+                        console.log('Adding direct event listener to file input');
+                        fileInput.onchange = function() {
+                            if (this.files && this.files[0]) {
+                                const reader = new FileReader();
+                                reader.onload = function(e) {
+                                    const profileImg = document.querySelector('.profile-image');
+                                    const headerImg = document.querySelector('#currentUserImage');
+                                    
+                                    if (profileImg) profileImg.src = e.target.result;
+                                    if (headerImg) headerImg.src = e.target.result;
+                                    
+                                    console.log('Images updated via direct event handler');
+                                };
+                                reader.readAsDataURL(this.files[0]);
+                            }
+                        };
+                    }
+                }, 500); // 少し遅延させてDOM要素が確実に存在するようにする
+            });
+        </script>
+    </th:block>
+    
+    <th:block layout:fragment="scripts">
+      <script th:src="@{/js/profile-page-simple.js(v=${#dates.createNow().getTime()})}"></script>
+    </th:block>
+</body>
+</html>

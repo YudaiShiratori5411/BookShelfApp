@@ -110,4 +110,17 @@ public class UserService {
 	public User updateUser(User user) {
 	    return userRepository.save(user);
 	}
+	
+	public String getCurrentUserProfileImage(Long userId) {
+	    if (userId == null) {
+	        return "/images/default-profile.jpg";
+	    }
+	    
+	    try {
+	        User user = findById(userId);
+	        return user.getProfileImagePath() != null ? user.getProfileImagePath() : "/images/default-profile.jpg";
+	    } catch (Exception e) {
+	        return "/images/default-profile.jpg";
+	    }
+	}
 }

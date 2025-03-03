@@ -103,17 +103,21 @@ html {
     }
 }
 
-
-
-
-
-
-
 /* その他のレイアウト調整 */
 .mt-4 {
     display: flex;
     gap: 10px;
     justify-content: flex-start;
+    align-items: center;
+}
+
+.profile-container {
+    display: block !important;
+    align-items: center;
+}
+
+.register-container {
+    display: block !important;
     align-items: center;
 }
 
